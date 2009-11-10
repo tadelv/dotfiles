@@ -6,3 +6,8 @@
 *.zip
 .com.apple.*
 .idea
+
+#xcode
+build/*
+*.pbxuser
+*.modev*
