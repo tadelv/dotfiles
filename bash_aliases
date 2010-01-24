@@ -1,6 +1,6 @@
 # Some useful aliases
 # vi:filetype=sh:
-alias aliases='vim ~/.bash_aliases && source ~/.bash_aliases'
+#alias aliases='vim ~/.bash_aliases && source ~/.bash_aliases'
 
 # Function which adds an alias to the current shell and to
 # the ~/.bash_aliases file.
@@ -15,7 +15,7 @@ add-alias ()
 #######
 # git #
 #######
-alias gl='git pull'
+alias gl='git pull --rebase'
 alias gp='git push'
 alias gd='git diff'
 alias gc='git commit -v'
@@ -55,71 +55,39 @@ alias irb='irb --simple-prompt -r irb/completion -rubygems'
 
 # really awesome function, use: cdgem <gem name>, cd's into your gems directory
 # and opens gem that best matches the gem name provided
-function cdgem {
-  cd `gem env gemdir`/gems
-  cd `ls | grep $1 | sort | tail -1`
-}
-function gemdoc {
-  GEMDIR=`gem env gemdir`/doc
-  open $GEMDIR/`ls $GEMDIR | grep $1 | sort | tail -1`/rdoc/index.html
-}
-function mategem {
-  GEMDIR=`gem env gemdir`/gems
-  mate $GEMDIR/`ls $GEMDIR | grep $1 | sort | tail -1`
-}
+#function cdgem {
+#  cd `gem env gemdir`/gems
+#  cd `ls | grep $1 | sort | tail -1`
+#}
+#function gemdoc {
+#  GEMDIR=`gem env gemdir`/doc
+#  open $GEMDIR/`ls $GEMDIR | grep $1 | sort | tail -1`/rdoc/index.html
+#}
+#function mategem {
+#  GEMDIR=`gem env gemdir`/gems
+#  mate $GEMDIR/`ls $GEMDIR | grep $1 | sort | tail -1`
+#}
 
-alias qri='qri -w 98'
-alias fri='fri -w 98'
+#alias qri='qri -w 98'
+#alias fri='fri -w 98'
 
 #########
 # RAILS #
 #########
-alias sc='script/console'
-alias ss='script/server' # start up the beast; use "ss -d" to detach
-
-# stop daemonized Rails server
-function sst() {
-  if [ -f tmp/pids/mongrel.pid ]; then
-    echo "Stopping Mongrel ..."
-    kill `cat tmp/pids/mongrel.pid`
-  elif [ -f tmp/pids/server.pid ]; then
-    echo "Stopping server ..."
-    kill `cat tmp/pids/server.pid`
-  fi
-}
-
-# restart Rails application
-function sr() {
-  if [ -f tmp/pids/mongrel.pid ]; then
-    echo "Restarting Mongrel ..."
-    kill -USR2 `cat tmp/pids/mongrel.pid`
-  elif [ -f tmp/pids/server.pid ]; then
-    echo "Restarting server ..."
-    kill -USR2 `cat tmp/pids/server.pid`
-  else
-    echo "Restarting Passenger instances ..."
-    touch tmp/restart.txt
-  fi
-}
-
-# see http://railstips.org/2007/5/31/even-edgier-than-edge-rails
-function edgie() { 
-  ruby ~/.coral/rails/rails/railties/bin/rails $1 && cd $1 && ln -s ~/.coral/rails/rails vendor/rails
-}
 
 ########
 # misc #
 ########
 
-alias texclean='rm -f *.toc *.aux *.log *.cp *.fn *.tp *.vr *.pg *.ky'
-alias clean='echo -n "Really clean this directory?";
-	read yorn;
-	if test "$yorn" = "y"; then
-	   rm -f \#* *~ .*~ *.bak .*.bak  *.tmp .*.tmp core a.out;
-	   echo "Cleaned.";
-	else
-	   echo "Not cleaned.";
-	fi'
+#alias texclean='rm -f *.toc *.aux *.log *.cp *.fn *.tp *.vr *.pg *.ky'
+#alias clean='echo -n "Really clean this directory?";
+#	read yorn;
+#	if test "$yorn" = "y"; then
+#	   rm -f \#* *~ .*~ *.bak .*.bak  *.tmp .*.tmp core a.out;
+#	   echo "Cleaned.";
+#	else
+#	   echo "Not cleaned.";
+#	fi'
 alias h='history'
 alias j="jobs -l"
 alias l="ls -lah"
@@ -128,19 +96,31 @@ alias la='ls -A'
 # alias pu="pushd"
 # alias po="popd"
 
-# mojombo http://gist.github.com/180587
-function psg {
-  ps wwwaux | egrep "($1|%CPU)" | grep -v grep
-}
+alias m="mate ."
+#alias g="git"
+#alias oc="cd ~/Projects/oc"
+#alias oci="cd ~/Projects/oci"
+#alias lq="cd ~/Projects/livecliq"
+#alias pg="cd ~/Sources/playground"
+#alias dots="cd ~/dotfiles"
+#alias in="cd ~/Install"
+alias aliases="mate ~/.bash_aliases"
+#alias s="cd ~/Sources"
+#alias d="cd ~/Designs"
+#alias p="cd ~/Projects"
+#alias gx="gitx"
+#alias gempath="cd /Library/Ruby/Gems/1.8/gems"
+#alias good="git bisect good"
+#alias bad="git bisect bad"
+#alias gsu="git submodule update --init"
 
-#
-# Csh compatability:
-#
-alias unsetenv=unset
-function setenv () {
-  export $1="$2"
-}
+
+
 
 ########
 
-alias flashlog='tail -f ~/Library/Preferences/Macromedia/Flash\ Player/Logs/flashlog.txt'
+alias Dev="cd ~/Documents/Development"
+alias MyD="cd ~/Documents/Development/MyDev"
+alias repos='cd ~/Documents/Development/repos'
+alias oci='repos;cd oci'
+alias Xopen='open *.xcodeproj'
