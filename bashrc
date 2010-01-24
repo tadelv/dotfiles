@@ -19,10 +19,10 @@ parse_git_branch() {
   git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
 }
 
-PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\h\[\033[00m\]:\[\e[0;31m\]\w\[\e[m\]$(parse_git_branch) $ '
+PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;36m\]\w\[\033[00m\]\[\033[01;33m\]$(parse_git_branch)\[\033[00m\]$ '
 
 # Terminal title (git completion is required for this):
-# export PROMPT_COMMAND='echo -ne "\033]0;${PWD/#$HOME/~} $(__git_ps1 " (%s)")"; echo -ne "\007"' 
+export PROMPT_COMMAND='echo -ne "\033]0;${PWD/#$HOME/~} $(__git_ps1 " (%s)")"; echo -ne "\007"' 
 
 # If this is an xterm set the title to user@host:dir
 case "$TERM" in
@@ -54,3 +54,13 @@ git_completion='/usr/local/git/contrib/completion/git-completion.bash'
 if [ -f $git_completion ]; then
   source $git_completion
 fi
+
+# rake completion
+complete -C ~/dotfiles/rake_autocomplete.rb -o default rake
+
+# ssh completion on known hosts
+SSH_COMPLETE=( $(cat ~/.ssh/known_hosts | \
+cut -f 1 -d " " | \
+sed -e s/,.*//g | \
+uniq ) )
+complete -o default -W "${SSH_COMPLETE[*]}" ssh
