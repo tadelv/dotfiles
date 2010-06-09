@@ -20,7 +20,6 @@
 	summary = true
 [github]
 	user = tadelv
-	token = 40b4b05dc6d4ac3346f5b3c8811b8e86
 [merge]
 	tool = diffmerge
 [mergetool "diffmerge"]

@@ -1,13 +1,17 @@
-.*.sw?
-.svn
-*.pdf
-.DS_Store
-*.tmproj
-*.zip
-.com.apple.*
-.idea
-
-#xcode
+# xcode noise
 build/*
 *.pbxuser
-*.modev*
+*.mode1v3
+*.mode2v3
+
+# old skool
+.svn
+
+# osx noise
+.DS_Store
+profile
+
+# rails etc.
+db/*.db
+db/*.sqlite3
+log/*.log
