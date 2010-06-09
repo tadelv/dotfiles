@@ -121,7 +121,7 @@ alias aliases="mate ~/.bash_aliases"
 # my aliases
 #######
 
-alias dev="cd ~/Development"
+alias dev="cd ~/development"
 alias repos='dev;cd repos'
 alias xc='open *.xcodeproj'
 alias rnd='dev;cd random'
