@@ -126,4 +126,11 @@ alias repos='dev;cd repos'
 alias xc='open *.xcodeproj'
 alias rnd='dev;cd random'
 alias pro='dev;cd projects'
+alias dot='repos;cd dotfiles'
 
+# find broken symlinks, for dotfiles
+# thanks to 
+# http://github.com/markcatley/dotfiles/commit/ee1b7013135f9c3813b43b9cd107b9d9294c7d49
+#
+# use with | grep dotfiles ;)
+alias broken_links='find . -type l | (while read FN ; do test -e "$FN" || ls -ld "$FN"; done)'
