@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 # for each git repo in a subdirectory ...
-dirs = Dir['**/.git'].map { |gd| File.dirname(gd) }
+require 'optparse'
+params = ARGV.getopts('d')
+dirs = Dir[params[:d]? '**/.git' : '*/.git'].map { |gd| File.dirname(gd) }
 
 def prompt
   print ">> "
