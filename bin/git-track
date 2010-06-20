@@ -1,5 +1,10 @@
 #!/usr/bin/env ruby -w
-current_branch = File.read('.git/HEAD').chomp.split(' refs/heads/').last
+begin
+  current_branch = File.read('.git/HEAD').chomp.split(' refs/heads/').last
+rescue 
+  puts "Couldn't read current branch, are you in the root directory of your git repository?"
+  exit 1
+end
 track = ARGV.first
 
 if track and track.index('/')
