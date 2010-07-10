@@ -11,7 +11,7 @@ Dir.chdir File.dirname(__FILE__) do
   Dir['*'].each do |theme|
     next if theme == 'install_themes.rb'
     target = File.join(themes_dir, theme)
-    system %[ln -vsf #{File.join(src_dir, theme)} \'#{target}\']
+    system %[ln -vsf #{File.join(home,src_dir, theme)} \'#{target}\']
   end
 end
 
