@@ -4,6 +4,11 @@ build/*
 *.mode1v3
 *.mode2v3
 
+#xcode4 noise
+*.xcworkspace/
+xcuserdata/
+
+
 # old skool
 .svn
 
