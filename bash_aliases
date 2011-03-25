@@ -38,6 +38,10 @@ function st {
   fi
 }
 
+#shorthands for mislav's excellent each-git:
+alias gpa='echo "git pull" | each-git'
+alias gfa='echo "git fetch" | each-git -d'
+
 #######
 # SVN #
 #######

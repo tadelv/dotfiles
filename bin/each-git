@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 # for each git repo in a subdirectory ...
 require 'optparse'
+
+# use 'each-git -d' to execute commands recursively, i.e. in submodules
 params = ARGV.getopts('d')
 dirs = Dir[params[:d]? '**/.git' : '*/.git'].map { |gd| File.dirname(gd) }
 
