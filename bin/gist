@@ -22,8 +22,8 @@ require 'net/http'
 module Gist
   extend self
 
-  @@gist_url    = 'http://gist.github.com/%d.txt'
-  @@gist_regexp = Regexp.new('http://gist.github.com/(\d+)')
+  @@gist_url    = 'https://gist.github.com/%d.txt'
+  @@gist_regexp = Regexp.new('https://gist.github.com/(\d+)')
 
   def read(gist_id)
     return help if gist_id == '-h' || gist_id.nil? || gist_id[/help/]
@@ -31,7 +31,7 @@ module Gist
   end
 
   def write(content)
-    url = URI.parse('http://gist.github.com/gists')
+    url = URI.parse('https://gist.github.com/gists')
     req = Net::HTTP.post_form(url, data(nil, nil, content))
 
     copy req.body[@@gist_regexp]
