@@ -116,7 +116,7 @@ alias aliases="mate ~/.bash_aliases"
 #alias gempath="cd /Library/Ruby/Gems/1.8/gems"
 #alias good="git bisect good"
 #alias bad="git bisect bad"
-#alias gsu="git submodule update --init"
+alias gsu="git submodule update --init"
 
 
 
