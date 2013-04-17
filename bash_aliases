@@ -139,3 +139,5 @@ alias work='dev;cd work'
 #
 # use with | grep dotfiles ;)
 alias broken_links='find . -type l | (while read FN ; do test -e "$FN" || ls -ld "$FN"; done)'
+
+alias matediff='svn diff | mate'
