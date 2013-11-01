@@ -15,7 +15,7 @@
 
 [core]
 	excludesfile = /Users/vid/.gitignore
-	editor = mate -w
+	editor = "subl -n -w"
 [mirror]
 	summary = true
 [github]

@@ -11,7 +11,6 @@ Dir.chdir File.dirname(__FILE__) do
     next if file == 'install.rb' || file == 'additional'
     target_name = file == 'bin' ? file : ".#{file}"
     target = File.join(home, target_name)
-    puts %[ln -vsf #{File.join(dotfiles_dir, file)} #{target}]
-    # system %[ln -vsf #{File.join(dotfiles_dir, file)} #{target}]
+    system %[ln -vsf #{File.join(dotfiles_dir, file)} #{target}]
   end
 end
