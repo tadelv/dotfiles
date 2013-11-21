@@ -37,8 +37,8 @@ function l -d "long list"
   ls -la $argv
 end
 
-function subl -d "Sublime editor"
-  /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl $argv
+function subl -d "Sublime editor in a new window"
+  /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl -n $argv
 end
 
 # shorthands
@@ -55,6 +55,14 @@ function scratch
   dev; cd scratch
 end
 
+function repos
+  dev; cd repos
+end
+
+function dot
+  repos; cd dotfiles
+end
+
 function xc
   open *.xcodeproj
 end
@@ -62,7 +70,7 @@ end
 # Helpers
 
 function is_git
-  git status >/dev/null ^&1        
+  git status >/dev/null ^&1
   return $status
 end
 
@@ -91,4 +99,3 @@ function st
     svn status $argv
   end
 end
-  
