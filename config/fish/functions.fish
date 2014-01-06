@@ -1,4 +1,4 @@
-echo "Loading functions ..."
+#echo "Loading functions ..."
 
 function extract --description "Extract an archive"
   if begin; not test -z $argv[1]; and test -f $argv[1]; end
