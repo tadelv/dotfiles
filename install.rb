@@ -11,6 +11,7 @@ Dir.chdir File.dirname(__FILE__) do
     next if file == 'install.rb' || file == 'additional'
     target_name = file == 'bin' ? file : ".#{file}"
     target = File.join(home, target_name)
-    system %[ln -vsfT #{File.join(dotfiles_dir, file)} #{target}]
+    #if file exists, delete/bak it first
+    system %[ln -vsf #{File.join(dotfiles_dir, file)} #{target}]
   end
 end
