@@ -103,7 +103,7 @@ end
 function vpn_up #"Connect home"
  osascript -e 'tell application "System Events" 
        tell current location of network preferences
-	       set VPN to service "Home"
+	       set VPN to service "Home (PPTP)"
 	       if exists VPN then connect VPN
            repeat while (current configuration of VPN is not connected)
                delay 1
@@ -115,7 +115,7 @@ end
 function vpn_down #"Connect home"
  osascript -e 'tell application "System Events" 
        tell current location of network preferences
-	       set VPN to service "Home"
+	       set VPN to service "Home (PPTP)"
 	       if exists VPN then disconnect VPN
        end tell
    end tell'
