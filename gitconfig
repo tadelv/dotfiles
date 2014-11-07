@@ -15,7 +15,7 @@
 
 [core]
 	excludesfile = /Users/vid/.gitignore
-	editor = "subl -n -w"
+	editor = "mate -w"
 [mirror]
 	summary = true
 [github]
@@ -28,3 +28,5 @@
 [push]
 	default = tracking
 
+[git-tmbundle]
+	show-diff-check = yes
