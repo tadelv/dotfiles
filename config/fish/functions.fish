@@ -37,10 +37,6 @@ function l -d "long list"
   ls -la $argv
 end
 
-function subl -d "Sublime editor in a new window"
-  /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl -n $argv
-end
-
 # shorthands
 
 function work -d "change to work directory"
