@@ -64,6 +64,10 @@ function xc
 	open *.xcodeproj
 end
 
+function xcw
+	open *.xcworkspace
+end
+
 # Helpers
 
 function is_git
