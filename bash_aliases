@@ -128,6 +128,7 @@ alias gsu="git submodule update --init"
 alias dev="cd ~/development"
 alias repos='dev;cd repos'
 alias xc='open *.xcodeproj'
+alias xcw='open *.xcworkspace'
 alias rnd='dev;cd random'
 alias pro='dev;cd projects'
 alias dot='repos;cd dotfiles'
