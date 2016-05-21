@@ -121,3 +121,20 @@ function vpn_down #"Connect home"
 		end tell
 	end tell'
 end
+
+function gba #"Game Boy Arcade"
+	git branch -a
+end
+
+function gco #"Checkout branch in git"
+	git checkout $argv
+end
+
+function gl #"git pull"
+	git pull $argv
+end
+
+function gb #"git branch"
+	git branch $argv
+end
+	
