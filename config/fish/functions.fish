@@ -137,4 +137,8 @@ end
 function gb #"git branch"
 	git branch $argv
 end
+
+function gf
+    git fetch $argv
+end
 	
