@@ -61,11 +61,19 @@ function dot
 end
 
 function xc
-	open *.xcodeproj
+	open -a "Xcode.app" *.xcodeproj
 end
 
 function xcw
-	open *.xcworkspace
+	open -a "Xcode.app" *.xcworkspace
+end
+
+function xb
+	open -a "Xcode-beta.app" *.xcodeproj
+end
+
+function xbw
+	open -a "Xcode-beta.app" *.xcworkspace
 end
 
 # Helpers
