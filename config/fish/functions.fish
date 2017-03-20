@@ -11,7 +11,7 @@ function extract --description "Extract an archive"
 			case '*.bz2'
 				bunzip2 $argv
 			case '*.rar'
-				rar x $argv
+				unrar x $argv
 			case '*.gz'
 				gunzip $argv
 			case '*.tar'
