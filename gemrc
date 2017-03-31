@@ -1,1 +1,2 @@
 gem: -n/usr/local/bin
+gem: --no-ri 
