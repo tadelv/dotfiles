@@ -76,6 +76,10 @@ function xbw
 	open -a "Xcode-beta.app" *.xcworkspace
 end
 
+function fork -d "Open directory with Fork.app"
+	open -a Fork.app .
+end
+
 # Helpers
 
 function is_git
