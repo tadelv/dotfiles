@@ -14,7 +14,7 @@
 	branch = auto
 
 [core]
-	excludesfile = /Users/vid/.gitignore
+	excludesfile = ~/.gitignore
 	editor = "mate -w"
 [mirror]
 	summary = true
@@ -30,3 +30,10 @@
 
 [git-tmbundle]
 	show-diff-check = yes
+[includeIf "gitdir:~/development/work/"]
+    path = ~/development/work/.gitconfig
+[filter "lfs"]
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+	clean = git-lfs clean -- %f
