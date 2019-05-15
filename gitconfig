@@ -7,7 +7,10 @@
 	co = checkout
 	put = push origin HEAD
 	track = !git-track
-        lc = log ORIG_HEAD.. --stat --no-merges
+    lc = log ORIG_HEAD.. --stat --no-merges
+	lol = log --pretty=oneline --abbrev-commit --graph --decorate
+	lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset' --abbrev-commit --date=relative
+	unstage = reset HEAD
 [color]
 	diff = auto
 	status = auto
