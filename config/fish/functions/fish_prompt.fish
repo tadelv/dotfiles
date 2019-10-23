@@ -3,8 +3,8 @@ function fish_prompt --description 'Write out the prompt'
   set -l last_status $status
 
   # Just calculate these once, to save a few cycles when displaying the prompt
-  if not set -q __fish_prompt_hostname
-    set -g __fish_prompt_hostname (hostname|cut -d . -f 1)
+  if not set -g __fish_prompt_hostname
+    set -g __fish_prompt_hostname (hostname | cut -d . -f 1)
   end
 
   if not set -q __fish_prompt_normal
@@ -89,4 +89,4 @@ if not set -q __prompt_initialized_2
   set -U fish_color_host -o cyan
   set -U fish_color_status red
   set -U __prompt_initialized_2
-end
+endgit
