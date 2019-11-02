@@ -133,6 +133,7 @@ alias rnd='dev;cd random'
 alias pro='dev;cd projects'
 alias dot='repos;cd dotfiles'
 alias work='dev;cd work'
+alias home='cd ~/homesync'
 
 # find broken symlinks, for dotfiles
 # thanks to 

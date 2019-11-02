@@ -154,3 +154,6 @@ function gf
     git fetch $argv
 end
 	
+function home #"switch to homesync"
+	cd ~/homesync
+end

@@ -1,2 +1,2 @@
-script import sys
+command script import sys
 command script import /usr/local/opt/chisel/libexec/fblldb.py
