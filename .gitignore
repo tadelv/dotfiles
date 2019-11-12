@@ -1,7 +1,17 @@
-#stupid fish
+# stupid fish
 fish_history
 fishd.*
+<<<<<<< HEAD
 
 #stupid me
 bin
 config
+=======
+fish_variables
+
+# stupid htop
+htoprc
+
+# stupid gtk
+config/gtk-2.0
+>>>>>>> 1819f1fa483a7cf53c21ba3e2fee76de26a9b709
