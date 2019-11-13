@@ -28,3 +28,6 @@ log/*.log
 
 # CocoaPods
 Pods
+
+# Qt
+config/QtProject
