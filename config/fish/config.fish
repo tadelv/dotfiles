@@ -22,4 +22,4 @@ set -x GEM_HOME "$HOME/gems"
 
 # rbenv config
 #
-status --is-interactive; and source (rbenv init -|psub)
+which rbenv; and status --is-interactive; and source (rbenv init -|psub)
