@@ -15,4 +15,4 @@ fish_add_path (gem environment gemhome)/bin
 set -x EDITOR 'mate -w'
 
 
-
+eval (brew shellenv)
