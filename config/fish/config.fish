@@ -15,4 +15,8 @@ fish_add_path (gem environment gemhome)/bin
 set -x EDITOR 'mate -w'
 
 
-eval (brew shellenv)
+set arch (uname -m)
+if [ $arch = "arm64" ];
+	eval (/opt/homebrew/bin/brew shellenv)
+end
+
