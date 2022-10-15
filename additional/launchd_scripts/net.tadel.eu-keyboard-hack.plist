@@ -15,11 +15,5 @@
       <key>SuccessfulExit</key>
       <false/>
     </dict>
-	<key>RunAtLoad</key>
-	<true/>
-    <key>StandardErrorPath</key>
-    <string>/usr/local/var/log/keyboard-hack.log</string>
-    <key>StandardOutPath</key>
-    <string>/usr/local/var/log/keyboard-hack.log</string>
   </dict>
 </plist>
