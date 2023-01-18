@@ -11,6 +11,15 @@ build/*
 !default.perspectivev3
 !default.xcworkspace
 xcuserdata
+.DS_Store
+/.build
+/Packages
+/*.xcodeproj
+xcuserdata/
+DerivedData/
+.swiftpm/config/registries.json
+.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
+.netrc
 
 
 # old skool
