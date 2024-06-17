@@ -55,6 +55,11 @@ return {
 			console_logs = {
 				enabled = true,
 			},
+      integrations = {
+        xcode_build_server = {
+          enabled = true,
+        }
+      }
 		})
 
     -- stylua: ignore start
