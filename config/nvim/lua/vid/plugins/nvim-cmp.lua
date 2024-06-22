@@ -15,7 +15,9 @@ return {
     local lspkind = require("lspkind")
 
     -- loads vscode style snippets from installed plugins (e.g. friendly-snippets)
-    require("luasnip.loaders.from_vscode").lazy_load()
+     require("luasnip.loaders.from_vscode").load({ paths = { vim.fn.stdpath("config") .. "/luasnip_snippets"} })
+     require("luasnip.loaders.from_vscode").lazy_load()
+
 
     cmp.setup({
       completion = {
@@ -46,11 +48,29 @@ return {
             fallback()
           end
         end, { "i", "s" }),
+        ["<tab>"] = cmp.mapping(function(original)
+                    if cmp.visible() then
+                        cmp.select_next_item() -- run completion selection if completing
+                    elseif luasnip.expand_or_jumpable() then
+                        luasnip.expand_or_jump() -- expand snippets
+                    else
+                        original()      -- run the original behavior if not completing
+                    end
+                end, {"i", "s"}),
+        ["<S-tab>"] = cmp.mapping(function(original)
+          if cmp.visual() then
+            cmp.select_prev_item()
+          elseif luasnip.expand_or_jumpable() then
+            luasnip.jump(-1)
+          else
+            original()
+          end
+        end, {"i", "s" }),
       }),
       -- sources for autocompletion
       sources = cmp.config.sources({
         { name = "nvim_lsp" },
-        { name = "luasnip" }, -- snippets
+        { name = "luasnip", }, -- snippets
         { name = "buffer" }, -- text within current buffer
         { name = "path" }, -- file system paths
       }),

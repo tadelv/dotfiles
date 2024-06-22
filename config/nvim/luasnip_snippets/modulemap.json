@@ -1,0 +1,16 @@
+{
+  "mod": {
+    "prefix": "mod",
+    "description": "module",
+    "body": [
+      "module $1 {",
+      "\t$0",
+      "\\}"
+    ]
+  },
+  "head": {
+    "prefix": "head",
+    "description": "header",
+    "body": "header \"$1\"$0"
+  }
+}

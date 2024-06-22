@@ -1,0 +1,134 @@
+{
+  "doc": {
+    "prefix": "doc",
+    "description": "HTML doctype",
+    "body": "<!DOCTYPE HTML>"
+  },
+  "charset": {
+    "prefix": "charset",
+    "description": "Set the charset",
+    "body": "<meta charset=\"${1:UTF-8}\">$0"
+  },
+  "html": {
+    "prefix": "html",
+    "description": "Surrounding html tag",
+    "body": [
+      "<html>",
+      "\t${1:$TM_SELECTED_TEXT}",
+      "</html>"
+    ]
+  },
+  "head": {
+    "prefix": "head",
+    "description": "Head html tag",
+    "body": [
+      "<head>",
+      "\t${1:$TM_SELECTED_TEXT}",
+      "</head>"
+    ]
+  },
+  "body": {
+    "prefix": "body",
+    "description": "Body html tag",
+    "body": [
+      "<body>",
+      "\t${1:$TM_SELECTED_TEXT}",
+      "</body>"
+    ]
+  },
+  "title": {
+    "prefix": "title",
+    "description": "Title tags",
+    "body": "<title>$1</title>$0"
+  },
+  "meta": {
+    "prefix": "meta",
+    "description": "meta tag",
+    "body": "<meta${1: }/>$0"
+  },
+  "stylesheet": {
+    "prefix": "stylesheet",
+    "description": "link stylesheet",
+    "body": "<link rel=\"stylesheet\" type=\"text/css\" href=\"$1\">$0"
+  },
+  "style": {
+    "prefix": "style",
+    "description": "<style></style>",
+    "body": [
+      "<style>",
+      "$0",
+      "</style>"
+    ]
+  },
+  "div": {
+    "prefix": "div",
+    "description": "a div tag",
+    "body": "<div>${1:$TM_SELECTED_TEXT}</div>"
+  },
+  "p": {
+    "prefix": "p",
+    "description": "A paragraph tag",
+    "body": "<p>${1:$TM_SELECTED_TEXT}</p>"
+  },
+  "nav": {
+    "prefix": "nav",
+    "description": "<nav></nav>",
+    "body": [
+      "<nav>",
+      "\t$1",
+      "</nav>$0"
+    ]
+  },
+  "ul": {
+    "prefix": "ul",
+    "description": "<ul></ul>",
+    "body": [
+      "<ul>",
+      "\t$1",
+      "</ul>$0"
+    ]
+  },
+  "ol": {
+    "prefix": "ol",
+    "description": "<ol></ol>",
+    "body": [
+      "<ol>",
+      "\t$1",
+      "</ol>$0"
+    ]
+  },
+  "li": {
+    "prefix": "li",
+    "description": "<li></li>",
+    "body": "<li>$1</li>$0"
+  },
+  "h1": {
+    "prefix": "h1",
+    "description": "Heading level 1",
+    "body": "<h1>${1:$TM_SELECTED_TEXT}</h1>$0"
+  },
+  "h2": {
+    "prefix": "h2",
+    "description": "Heading level 2",
+    "body": "<h2>${1:$TM_SELECTED_TEXT}</h2>$0"
+  },
+  "h3": {
+    "prefix": "h3",
+    "description": "Heading level 3",
+    "body": "<h3>${1:$TM_SELECTED_TEXT}</h3>$0"
+  },
+  "script": {
+    "prefix": "script",
+    "description": "HTML inline script",
+    "body": [
+      "<script charset=utf-8>",
+      "\t${0:$TM_SELECTED_TEXT}",
+      "</script>"
+    ]
+  },
+  "scriptsrc": {
+    "prefix": "scriptsrc",
+    "description": "<script src=...>",
+    "body": "<script src=\"$1\" type=\"${2:text/javascript}\" charset=\"${3:utf-8}\"></script>"
+  }
+}

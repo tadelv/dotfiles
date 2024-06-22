@@ -1,0 +1,74 @@
+{
+  "subdir": {
+    "prefix": "subdir",
+    "description": "Add subdirectory",
+    "body": "add_subdirectory(\"$1\")$0"
+  },
+  "status": {
+    "prefix": "status",
+    "description": "Status message",
+    "body": "message(STATUS \"$1\")$0"
+  },
+  "fatal": {
+    "prefix": "fatal",
+    "description": "Fatal error message",
+    "body": "message(FATAL_ERROR \"$1\")$0"
+  },
+  "warn": {
+    "prefix": "warn",
+    "description": "Warning message",
+    "body": "message(WARNING \"$1\")$0"
+  },
+  "target_link_libraries": {
+    "prefix": "target_link_libraries",
+    "description": "Link link_libraries to a target",
+    "body": "target_link_libraries(${1:target} ${2:library})$0"
+  },
+  "target_include_directories": {
+    "prefix": "target_include_directories",
+    "description": "Set include directories for a target",
+    "body": "target_include_directories(${1:target} ${2:INTERFACE|PUBLIC|PRIVATE} ${3:item})$0"
+  },
+  "if": {
+    "prefix": "if",
+    "description": "if statement",
+    "body": [
+      "if($1)",
+      "\t$0",
+      "endif()"
+    ]
+  },
+  "function": {
+    "prefix": "function",
+    "description": "Add a new function",
+    "body": [
+      "function(${1:function_name}${2: Argument})",
+      "\t$0",
+      "endfunction()"
+    ]
+  },
+  "macro": {
+    "prefix": "macro",
+    "description": "Add a new macro",
+    "body": [
+      "macro(${1:name}${2: Argument})",
+      "\t$0",
+      "endmacro()"
+    ]
+  },
+  "min": {
+    "prefix": "min",
+    "description": "cmake minimum required",
+    "body": "cmake_minimum_required($1)$0"
+  },
+  "set": {
+    "prefix": "set",
+    "description": "set()",
+    "body": "set(${1:VARIABLE} ${2:VALUE} ${3:CACHE} ${4:TYPE} ${5:DOCSTRING} ${6:FORCE} ${7:PARENT_SCOPE})$0"
+  },
+  "option": {
+    "prefix": "option",
+    "description": "option()",
+    "body": "option(${1:VARIABLE} ${2:DOCSTRING} ${3:INITIAL_VALUE})"
+  }
+}

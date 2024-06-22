@@ -1,0 +1,47 @@
+{
+  "class": {
+    "prefix": "class",
+    "description": "Create a class",
+    "body": [
+      "class $1 {",
+      "\t$0",
+      "\\};"
+    ]
+  },
+  "ns": {
+    "prefix": "ns",
+    "description": "Namespace",
+    "body": [
+      "namespace $1 {",
+      "\t$0",
+      "\\} // namespace $1"
+    ]
+  },
+  "switch": {
+    "prefix": "switch",
+    "description": "Create a switch",
+    "body": [
+      "switch($1) {",
+      "\t$0",
+      "\\}"
+    ]
+  },
+  "case": {
+    "prefix": "case",
+    "description": "case",
+    "body": [
+      "case ${1:1}:",
+      "\tbreak;"
+    ]
+  },
+  "cout": {
+    "prefix": "cout",
+    "description": "std::cout",
+    "body": "std::cout << $1 << std::endl;$0"
+  },
+  "cerr": {
+    "prefix": "cerr",
+    "description": "std::cerr",
+    "body": "std::cerr << $1 << std::endl;$0"
+  }
+}

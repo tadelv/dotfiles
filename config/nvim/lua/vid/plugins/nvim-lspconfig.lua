@@ -15,11 +15,21 @@ return {
      local servers = {
        clangd = {},
        sourcekit = {
-         root_dir = lspconfig.util.root_pattern(
+        cmd = {'sourcekit-lsp'},
+        filetypes = { 'swift', 'c', 'cpp', 'objective-c', 'objective-cpp' },
+        root_dir = lspconfig.util.root_pattern(
            '.git',
            'Package.swift',
-           'compile_commands.json'
+           'compile_commands.json',
+            'buildServer.json'
          ),
+          capabilities = {
+            workspace = {
+              didChangeWatchedFiles = {
+                dynamicRegistration = true,
+              }
+            }
+          }
        },
        lspconfig.rust_analyzer.setup {}
      }

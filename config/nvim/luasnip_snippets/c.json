@@ -1,0 +1,40 @@
+{
+  "inc": {
+    "prefix": "inc",
+    "description": "#include",
+    "body": "#include <$1>$0"
+  },
+  "'\\#include'": {
+    "prefix": "'\\#include'",
+    "description": "#include",
+    "body": "#include <$1>$0"
+  },
+  "scope": {
+    "prefix": "scope",
+    "description": "Create a new scope",
+    "body": [
+      "{",
+      "\t${1:$TM_SELECTED_TEXT}",
+      "\\}"
+    ]
+  },
+  "if": {
+    "prefix": "if",
+    "description": "if () {}",
+    "body": [
+      "if ($1) {",
+      "\t$2",
+      "\\}$0"
+    ]
+  },
+  "main": {
+    "prefix": "main",
+    "description": "Main function",
+    "body": [
+      "int main(int argc, char ** argv) {",
+      "\t$1",
+      "\treturn 0;",
+      "\\}$0"
+    ]
+  }
+}

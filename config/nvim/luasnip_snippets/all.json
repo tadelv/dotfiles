@@ -1,0 +1,17 @@
+{
+  "title": {
+    "prefix": "title",
+    "description": "Title case",
+    "body": "\\${VISUAL:/\\w+\\s*/\\u$0/g\\}"
+  },
+  "lower": {
+    "prefix": "lower",
+    "description": "Lower case",
+    "body": "\\${VISUAL:/\\w+\\s*/\\L$0\\E/g\\}"
+  },
+  "upper": {
+    "prefix": "upper",
+    "description": "Upper case",
+    "body": "\\${VISUAL:/\\w+\\s*/\\U$0\\E/g\\}"
+  }
+}
