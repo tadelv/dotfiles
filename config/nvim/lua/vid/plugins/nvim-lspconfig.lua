@@ -1,6 +1,25 @@
+function mergeTables(t1, t2)
+    local merged = {}
+    
+    -- Insert elements from t1
+    for k, v in pairs(t1) do
+        merged[k] = v
+    end
+    
+    -- Insert elements from t2
+    for k, v in pairs(t2) do
+        merged[k] = v
+    end
+    
+    return merged
+end
+
 return {
   {
     "neovim/nvim-lspconfig",
+    dependencies = {
+      "hrsh7th/cmp-nvim-lsp"
+    },
     lazy = false,
     config = function()
       local lspconfig = require('lspconfig')
@@ -11,9 +30,12 @@ return {
         ["textDocument/hover"] = lsp.with(lsp.handlers.hover, borders),
         ["txtdocument/signatureHelp"] = lsp.with(lsp.handlers.signature_help, borders),
       }
+      local cmp_lsp = require('cmp_nvim_lsp')
 
      local servers = {
-       clangd = {},
+       clangd = {
+          capabilities = cmp_lsp.default_capabilities()
+        },
        sourcekit = {
         cmd = {'sourcekit-lsp'},
         filetypes = { 'swift', 'c', 'cpp', 'objective-c', 'objective-cpp' },
@@ -23,13 +45,16 @@ return {
            'compile_commands.json',
             'buildServer.json'
          ),
-          capabilities = {
+          capabilities = mergeTables(
+            cmp_lsp.default_capabilities(),
+            {
             workspace = {
               didChangeWatchedFiles = {
                 dynamicRegistration = true,
               }
             }
           }
+          )
        },
        lspconfig.rust_analyzer.setup {}
      }
