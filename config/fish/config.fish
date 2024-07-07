@@ -20,3 +20,8 @@ if [ $arch = "arm64" ];
 	eval (/opt/homebrew/bin/brew shellenv)
 end
 
+
+# Created by `pipx` on 2024-06-15 20:29:10
+set PATH $PATH /Users/vid/.local/bin
+
+starship init fish | source

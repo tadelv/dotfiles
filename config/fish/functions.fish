@@ -61,11 +61,11 @@ function dot
 end
 
 function xc
-	open -a "Xcode.app" *.xcodeproj
+	open *.xcodeproj
 end
 
 function xcw
-	open -a "Xcode.app" *.xcworkspace
+	open *.xcworkspace
 end
 
 function xb

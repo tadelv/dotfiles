@@ -14,7 +14,7 @@ xcuserdata
 .DS_Store
 /.build
 /Packages
-/*.xcodeproj
+# /*.xcodeproj
 xcuserdata/
 DerivedData/
 .swiftpm/config/registries.json
@@ -40,3 +40,10 @@ Pods
 
 # Qt
 config/QtProject
+
+# nvim clangd
+.cache
+compile_commands.json
+compile
+buildServer.json
+
