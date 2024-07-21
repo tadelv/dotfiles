@@ -1,4 +1,8 @@
 local opt = vim.opt
+local bo = vim.bo
+
+-- swift commentstring
+opt.commentstring = '// %s'
 
 -- line numbers
 opt.relativenumber = true
@@ -9,9 +13,11 @@ opt.tabstop = 2
 opt.shiftwidth = 2
 opt.expandtab = true
 opt.autoindent = true
+opt.softtabstop = 2
 
 -- line wrapping
 opt.wrap = true
+opt.tw = 120
 
 -- search settings
 opt.ignorecase = true

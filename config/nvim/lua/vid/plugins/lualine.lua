@@ -1,3 +1,24 @@
+local function xcodebuild_device()
+  if vim.g.xcodebuild_platform == "macOS" then
+    return " macOS"
+  end
+
+  local deviceIcon = ""
+  if vim.g.xcodebuild_platform:match("watch") then
+    deviceIcon = "􀟤"
+  elseif vim.g.xcodebuild_platform:match("tv") then
+    deviceIcon = "􀡴 "
+  elseif vim.g.xcodebuild_platform:match("vision") then
+    deviceIcon = "􁎖 "
+  end
+
+  if vim.g.xcodebuild_os then
+    return deviceIcon .. " " .. vim.g.xcodebuild_device_name .. " (" .. vim.g.xcodebuild_os .. ")"
+  end
+
+  return deviceIcon .. " " .. vim.g.xcodebuild_device_name
+end
+
 return {
   "nvim-lualine/lualine.nvim",
   dependencies = { "nvim-tree/nvim-web-devicons" },
@@ -14,8 +35,11 @@ return {
             cond = lazy_status.has_updates,
             -- color = { fg = "#ff9e64" },
           },
-          { "encoding" },
-          { "fileformat" },
+          -- { "encoding" },
+          -- { "fileformat" },
+          { "' ' .. vim.g.xcodebuild_last_status", color = { fg = "Gray" } },
+          { "'󰓾 ' .. vim.g.xcodebuild_scheme" },
+          { xcodebuild_device, color = { fg = "#f9e2af", bg = "#161622" } },
           { "filetype" },
         },
       },
