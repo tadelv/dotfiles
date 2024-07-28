@@ -47,3 +47,4 @@ compile_commands.json
 compile
 buildServer.json
 
+.nvim/xcodebuild
