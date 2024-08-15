@@ -13,11 +13,12 @@ function get_appearance()
 end
 
 function scheme_for_appearance(appearance)
-  if appearance:find 'Dark' then
-    return 'tokyonight-storm'
-  else
-    return 'Builtin Solarized Light'
-  end
+  return 'tokyonight-storm'
+  -- if appearance:find 'Dark' then
+  --   return 'tokyonight-storm'
+  -- else
+  --   return 'Builtin Solarized Light'
+  -- end
 end
 
 config.color_scheme = scheme_for_appearance(get_appearance())
