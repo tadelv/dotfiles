@@ -154,3 +154,11 @@ function gf
     git fetch $argv
 end
 	
+function brew -w brew
+	command brew $argv
+  which sketchybar > /dev/null
+	if test $status = 0
+		echo "Updating sketchybar ..."
+		sketchybar --trigger brew_update
+	end
+end
