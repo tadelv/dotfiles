@@ -53,8 +53,8 @@ return {
         enabled = true,
       },
       commands = {
-        extra_build_args = "-skipMacroValidation -parallelizeTargets",
-        extra_test_args = "-skipMacroValidation -parallelizeTargets",
+        extra_build_args = "-skipMacroValidation -parallelizeTargets -CommandLineBuildTimingLogLevel=2",
+        extra_test_args = "-skipMacroValidation -parallelizeTargets -CommandLineBuildTimingLogLevel=2",
       },
       console_logs = {
         enabled = true,
