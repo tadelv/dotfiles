@@ -28,6 +28,9 @@ return {
 
     -- configure lualine with modified theme
     lualine.setup({
+      options = {
+        globalstatus = true,
+      },
       sections = {
         lualine_x = {
           {
@@ -42,6 +45,22 @@ return {
           { xcodebuild_device, color = { fg = "#f9e2af", bg = "#161622" } },
           { "filetype" },
         },
+      },
+      winbar = {
+        lualine_a = { "'hello'" },
+        lualine_b = {},
+        lualine_c = { 'filename' },
+        lualine_x = {},
+        lualine_y = {},
+        lualine_z = {},
+      },
+      inactive_winbar = {
+        lualine_a = {},
+        lualine_b = { 'filename' },
+        lualine_c = {},
+        lualine_x = {},
+        lualine_y = {},
+        lualine_z = {},
       },
     })
   end,
