@@ -23,5 +23,6 @@ end
 
 # Created by `pipx` on 2024-06-15 20:29:10
 set PATH $PATH /Users/vid/.local/bin
+set PATH $PATH ~/development/flutter/bin
 
 starship init fish | source
