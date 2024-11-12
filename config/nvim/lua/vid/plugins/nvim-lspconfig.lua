@@ -19,9 +19,14 @@ return {
     "neovim/nvim-lspconfig",
     dependencies = {
       "hrsh7th/cmp-nvim-lsp",
+      "williamboman/mason.nvim",
+      "williamboman/mason-lspconfig",
     },
     lazy = false,
     config = function()
+      require("mason").setup()
+      require("mason-lspconfig").setup()
+
       local lspconfig = require("lspconfig")
       local ui = require("vid.core.ui")
       local borders = { border = ui.borders }
@@ -35,13 +40,13 @@ return {
       local servers = {
         clangd = {
           capabilities = cmp_lsp.default_capabilities(),
-					filetypes = { "c", "cpp", "swift", "objective-c", "objective-cpp" }
+          filetypes = { "c", "cpp", "objective-c", "objective-cpp" },
         },
         sourcekit = {
-          cmd = { "sourcekit-lsp" },
-          filetypes = { "swift", "c", "cpp", "objective-c", "objective-cpp" },
+          cmd = { "/Applications/Xcode-16.1.0.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/sourcekit-lsp" },
+          filetypes = { "c", "cpp", "swift", "objective-c", "objective-cpp" },
           root_dir = lspconfig.util.root_pattern(
-            ".git",
+            -- ".git",
             "Package.swift",
             "compile_commands.json",
             "buildServer.json"
@@ -54,7 +59,7 @@ return {
             },
           }),
         },
-        lspconfig.rust_analyzer.setup({}),
+        -- lspconfig.rust_analyzer.setup({}),
       }
 
       for server, setup in pairs(servers) do
