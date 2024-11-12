@@ -53,14 +53,25 @@ return {
         enabled = true,
       },
       commands = {
-        extra_build_args = "-skipMacroValidation -parallelizeTargets -CommandLineBuildTimingLogLevel=2",
-        extra_test_args = "-skipMacroValidation -parallelizeTargets -CommandLineBuildTimingLogLevel=2",
+        extra_build_args = {
+          "-skipMacroValidation",
+          "-parallelizeTargets",
+          "-CommandLineBuildTimingLogLevel=2",
+        },
+        extra_test_args = {
+          "-skipMacroValidation",
+          "-parallelizeTargets",
+          "-CommandLineBuildTimingLogLevel=2",
+        },
       },
       console_logs = {
         enabled = true,
       },
       integrations = {
         xcode_build_server = {
+          enabled = true,
+        },
+        pymobiledevice = {
           enabled = true,
         },
       },
