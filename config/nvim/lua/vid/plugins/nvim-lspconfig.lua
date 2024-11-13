@@ -36,6 +36,7 @@ return {
         ["txtdocument/signatureHelp"] = lsp.with(lsp.handlers.signature_help, borders),
       }
       local cmp_lsp = require("cmp_nvim_lsp")
+      local util = require("lspconfig.util")
 
       local servers = {
         clangd = {
@@ -44,13 +45,18 @@ return {
         },
         sourcekit = {
           cmd = { "/Applications/Xcode-16.1.0.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/sourcekit-lsp" },
-          filetypes = { "c", "cpp", "swift", "objective-c", "objective-cpp" },
-          root_dir = lspconfig.util.root_pattern(
-            -- ".git",
-            "Package.swift",
-            "compile_commands.json",
-            "buildServer.json"
-          ),
+          filetypes = { "swift", "objc", "objcpp", "c", "cpp" },
+          root_dir = function(filename, _)
+            return util.root_pattern("buildServer.json")(filename)
+              or util.root_pattern("*.xcodeproj", "*.xcworkspace")(filename)
+              -- better to keep it at the end, because some modularized apps contain multiple Package.swift files
+              or util.root_pattern("compile_commands.json", "Package.swift")(filename)
+              or util.find_git_ancestor(filename)
+          end,
+          get_language_id = function(_, ftype)
+            local t = { objc = "objective-c", objcpp = "objective-cpp" }
+            return t[ftype] or ftype
+          end,
           capabilities = mergeTables(cmp_lsp.default_capabilities(), {
             workspace = {
               didChangeWatchedFiles = {
