@@ -42,6 +42,7 @@ return {
       },
       git = {
         ignore = false,
+				timeout = 1000,
       },
     })
 

@@ -1,3 +1,8 @@
 {
 	"backgroundIndexing": true,
+	"swiftPM": {
+		"configuration": "release",
+		"swiftCompilerFlags": ["-Xfrontend", "-disable-stack-protector"],
+		"cCompilerFlags": ["-D__APPLE__", "-D__MACH__"]
+	}
 }
