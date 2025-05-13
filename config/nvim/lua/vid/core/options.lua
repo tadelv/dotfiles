@@ -1,8 +1,7 @@
 local opt = vim.opt
-local bo = vim.bo
 
 -- swift commentstring
-opt.commentstring = '// %s'
+opt.commentstring = "// %s"
 
 -- line numbers
 opt.relativenumber = true

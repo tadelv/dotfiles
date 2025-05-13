@@ -5,40 +5,9 @@
     "snippets": [
       {
         "language": [
-          "swift"
-        ],
-        "path": "./swift.json"
-      },
-      {
-        "language": [
           "sh"
         ],
         "path": "./sh.json"
-      },
-      {
-        "language": [
-          "python"
-        ],
-        "path": "./python.json"
-      },
-      {
-        "language": [
-          "cpp"
-        ],
-        "path": "./cpp.json"
-      },
-      {
-        "language": [
-          "modulemap"
-        ],
-        "path": "./modulemap.json"
-      },
-      {
-        "language": [
-          "c",
-          "cpp"
-        ],
-        "path": "./c.json"
       },
       {
         "language": [
@@ -60,9 +29,40 @@
       },
       {
         "language": [
+          "cpp"
+        ],
+        "path": "./cpp.json"
+      },
+      {
+        "language": [
+          "python"
+        ],
+        "path": "./python.json"
+      },
+      {
+        "language": [
           "snippets"
         ],
         "path": "./snippets.json"
+      },
+      {
+        "language": [
+          "modulemap"
+        ],
+        "path": "./modulemap.json"
+      },
+      {
+        "language": [
+          "c",
+          "cpp"
+        ],
+        "path": "./c.json"
+      },
+      {
+        "language": [
+          "swift"
+        ],
+        "path": "./swift.json"
       }
     ]
   }

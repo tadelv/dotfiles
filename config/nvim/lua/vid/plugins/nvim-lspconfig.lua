@@ -14,6 +14,7 @@ function mergeTables(t1, t2)
   return merged
 end
 
+
 return {
   {
     "neovim/nvim-lspconfig",
@@ -44,7 +45,7 @@ return {
           filetypes = { "c", "cpp", "objective-c", "objective-cpp" },
         },
         sourcekit = {
-          cmd = { "/Applications/Xcode-16.1.0.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/sourcekit-lsp" },
+          cmd = { "/Applications/Xcode-16.3.0.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/sourcekit-lsp" },
           filetypes = { "swift", "objc", "objcpp", "c", "cpp" },
           root_dir = function(filename, _)
             return util.root_pattern("buildServer.json")(filename)
@@ -105,6 +106,7 @@ return {
         local hl = "DiagnosticSign" .. type
         vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
       end
+
     end,
   },
 }
