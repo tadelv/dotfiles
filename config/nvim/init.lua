@@ -1,2 +1,3 @@
-require("vid.core")
-require("vid.lazy")
+-- bootstrap lazy.nvim, LazyVim and your plugins
+require("config.lazy")
+require("config.lsp")
