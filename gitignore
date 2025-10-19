@@ -1,6 +1,6 @@
 # thanks to https://github.com/github/gitignore/blob/master/Objective-C.gitignore
 # xcode
-build/*
+# build/*
 *.pbxuser
 !default.pbxuser
 *.mode1v3

@@ -136,6 +136,9 @@ source "$ITEM_DIR/volume.sh"
 # Shows floating window when spotify is playing a song
 source "$ITEM_DIR/spotify.sh"
 
+# aerospace
+# source "$ITEM_DIR/aerospace.sh"
+
 ###############################################################################
 #                            Community plugins
 ###############################################################################
