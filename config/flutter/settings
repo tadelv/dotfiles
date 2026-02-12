@@ -1,6 +1,6 @@
 {
   "enable-android": true,
   "android-sdk": "/Users/vid/Library/Android/sdk",
-  "jdk-dir": "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home/",
+  "jdk-dir": "/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home",
   "explicit-package-dependencies": true
 }
