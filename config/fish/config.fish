@@ -14,6 +14,7 @@ fish_add_path (gem environment gemhome)/bin
 
 set -x EDITOR 'mate -w'
 
+. ~/.config/fish/private.fish
 
 set arch (uname -m)
 if [ $arch = "arm64" ];
@@ -24,5 +25,12 @@ end
 # Created by `pipx` on 2024-06-15 20:29:10
 set PATH $PATH /Users/vid/.local/bin
 set PATH $PATH ~/development/flutter/bin
+set PATH $PATH ~/.pub-cache/bin/
+set PATH $PATH ~/development/repos/tup
+set PATH $PATH /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin 
+
+set -Ux PYENV_ROOT $HOME/.pyenv
+fish_add_path $PYENV_ROOT/bin
+pyenv init - | source
 
 starship init fish | source

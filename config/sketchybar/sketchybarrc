@@ -10,7 +10,8 @@ PLUGIN_DIR="$CONFIG_DIR/plugins" # Directory where all the plugin scripts are st
 
 # Needs to have Regular, Bold, Semibold, Heavy and Black variants
 # FONT="SF Pro"
-FONT="MesloLGM Nerd Font"
+# FONT="MesloLGM Nerd Font"
+FONT="Hack Nerd Font Mono"
 
 # All paddings use this value (icon, label, background), default is 3 but I
 # decreased it
@@ -46,7 +47,7 @@ sketchybar --bar "${bar[@]}"
 # Setting up default values
 defaults=(
 	updates=when_shown
-	icon.font="$FONT:Bold:14.0"
+	icon.font="$FONT:Bold:16.0"
 	icon.color=$ICON_COLOR
 	icon.padding_left=$PADDINGS
 	icon.padding_right=$PADDINGS
@@ -134,7 +135,7 @@ source "$ITEM_DIR/volume.sh"
 # source "$ITEM_DIR/cpu.sh"
 
 # Shows floating window when spotify is playing a song
-source "$ITEM_DIR/spotify.sh"
+#source "$ITEM_DIR/spotify.sh"
 
 # aerospace
 # source "$ITEM_DIR/aerospace.sh"

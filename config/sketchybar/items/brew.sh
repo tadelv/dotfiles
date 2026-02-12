@@ -6,7 +6,7 @@
 # e.g. via function in .zshrc
 
 brew=(
-	icon=􀐛
+	icon=
 	label=?
 	padding_right=10
 	script="$PLUGIN_DIR/brew.sh"

@@ -4,10 +4,11 @@
 
 front_app=(
 	# Using "MesloLGM Nerd Font"
-	label.font="$FONT:Bold:14.0"
+	label.font="$FONT:Bold:12.0"
 	# Using default "SF Pro"
 	# label.font="$FONT:Black:13.0"
 	icon.background.drawing=on
+  icon.background.image.scale=0.7
 	display=active
 	script="$PLUGIN_DIR/front_app.sh"
 	click_script="open -a 'Mission Control'"
