@@ -12,7 +12,7 @@ fish_add_path (gem environment gemhome)/bin
 
 . ~/.config/fish/functions.fish
 
-set -x EDITOR 'mate -w'
+set -x EDITOR 'nvim'
 
 . ~/.config/fish/private.fish
 
@@ -21,14 +21,19 @@ if [ $arch = "arm64" ];
 	eval (/opt/homebrew/bin/brew shellenv)
 end
 
+# dotfiles bin
+set PATH $PATH ~/bin
 
 # Created by `pipx` on 2024-06-15 20:29:10
-set PATH $PATH /Users/vid/.local/bin
+set PATH $PATH ~/.local/bin
 set PATH $PATH ~/development/flutter/bin
 set PATH $PATH ~/.pub-cache/bin/
+
+# toolchains
 set PATH $PATH ~/development/repos/tup
 set PATH $PATH /Applications/ArmGNUToolchain/15.2.rel1/arm-none-eabi/bin 
 
+# Pyenv
 set -Ux PYENV_ROOT $HOME/.pyenv
 fish_add_path $PYENV_ROOT/bin
 pyenv init - | source
