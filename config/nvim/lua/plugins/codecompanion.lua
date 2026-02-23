@@ -1,7 +1,5 @@
--- return {}
 return {
   "olimorris/codecompanion.nvim",
-  sha = "9a6f8d2", -- stable, pre-regression
   dependencies = {
     "nvim-lua/plenary.nvim",
     "Davidyz/VectorCode",
@@ -9,23 +7,24 @@ return {
     "nvim-treesitter/nvim-treesitter",
   },
   opts = {
-    log_level = "DEBUG",
     adapters = {
-      claude_code = function()
-        return require("codecompanion.adapters").extend("anthropic", {
-          env = {
-            api_key = vim.env.CLAUDE_CODE_OAUTH_TOKEN,
-          },
-        })
-      end,
-      -- 🔹 DeepSeek: chat + inline ONLY
+      acp = {
+        claude_code = function()
+          return require("codecompanion.adapters").extend("claude_code", {
+            env = {
+              CLAUDE_CODE_OAUTH_TOKEN = vim.env.CLAUDE_CODE_OAUTH_TOKEN,
+            },
+          })
+        end,
+      },
+      -- DeepSeek: chat + inline fallback
       deepseek = function()
         return require("codecompanion.adapters").extend("openai", {
           env = {
             api_key = vim.env.DEEPSEEK_API_KEY,
           },
           url = os.getenv("DEEPSEEK_API_BASE") or "https://api.deepseek.com",
-          supports_tools = false, -- HARD STOP
+          supports_tools = false,
           schema = {
             model = {
               default = "deepseek-chat",
@@ -39,8 +38,7 @@ return {
           },
         })
       end,
-
-      -- 🔹 OpenAI: tools + agents
+      -- OpenAI: tools + agents
       openai = function()
         return require("codecompanion.adapters").extend("openai", {
           env = {
@@ -55,20 +53,9 @@ return {
           },
         })
       end,
-      anthropic = function()
-        return require("codecompanion.adapters").extend("anthropic", {
-          env = {
-            api_key = vim.env.ANTHROPIC_API_KEY,
-          },
-        })
-      end,
     },
-
-    strategies = {
+    interactions = {
       chat = { adapter = "claude_code" },
-      inline = { adapter = "claude_code" },
-      agent = { adapter = "claude_code" },
-      cmd_runner = { adapter = "claude_code" },
     },
   },
 }
