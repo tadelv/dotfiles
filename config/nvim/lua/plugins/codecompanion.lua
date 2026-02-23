@@ -14,6 +14,9 @@ return {
             env = {
               CLAUDE_CODE_OAUTH_TOKEN = vim.env.CLAUDE_CODE_OAUTH_TOKEN,
             },
+            defaults = {
+              model = "opus",
+            },
           })
         end,
       },
