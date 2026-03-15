@@ -1,0 +1,86 @@
+#
+
+# [key-mapping.modifiers]
+# alt = "option"
+
+#
+# Use alt as main modifier
+[mode.main.binding]
+
+# focus windows
+alt-left = "focus left"
+alt-down = "focus down"
+alt-up = "focus up"
+alt-right = "focus right"
+
+# move windows
+alt-shift-left = "move left"
+alt-shift-down = "move down"
+alt-shift-up = "move up"
+alt-shift-right = "move right"
+
+# splits
+alt-v = "join-with left"
+alt-b = "join-with up"
+
+# fullscreen
+alt-f = "fullscreen"
+
+# floating toggle
+alt-shift-space = "layout floating tiling"
+
+# close window
+alt-q = "close"
+
+# Workspace switching
+ctrl-alt-1 = "workspace 1"
+ctrl-alt-2 = "workspace 2"
+ctrl-alt-3 = "workspace 3"
+ctrl-alt-4 = "workspace 4"
+ctrl-alt-5 = "workspace 5"
+
+# move window to workspace
+ctrl-alt-shift-1 = "move-node-to-workspace 1"
+ctrl-alt-shift-2 = "move-node-to-workspace 2"
+ctrl-alt-shift-3 = "move-node-to-workspace 3"
+ctrl-alt-shift-4 = "move-node-to-workspace 4"
+ctrl-alt-shift-5 = "move-node-to-workspace 5"
+
+# reset layout
+alt-r = "flatten-workspace-tree"
+
+# open terminal
+alt-enter = "exec-and-forget open -a Kitty"
+
+[gaps]
+# inner.horizontal = 8
+# inner.vertical = 8
+# outer.left = 8
+# outer.bottom = 8
+# outer.right = 8
+# outer.top = 32
+outer.top        = [{ monitor.main = 0 }, { monitor.secondary = 32 }, 0]
+
+[workspace-to-monitor-force-assignment]
+1 = ['built-in', 'lg']  # laptop screen, fallback
+2 = 'lg'       # external monitor
+3 = 'lg'
+4 = 'lg'
+5 = 'built-in'
+
+
+[[on-window-detected]]
+if.app-id = "com.apple.Safari"
+run = "move-node-to-workspace 2"
+
+[[on-window-detected]]
+if.app-id = "com.hnc.Discord"
+run = "move-node-to-workspace 5"
+
+[[on-window-detected]]
+if.app-id = "net.kovidgoyal.kitty"
+run = "move-node-to-workspace 2"
+
+[[on-window-detected]]
+if.app-id = "com.apple.notes"
+run = "move-node-to-workspace 2"
