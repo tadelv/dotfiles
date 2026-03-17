@@ -3,21 +3,24 @@
 # [key-mapping.modifiers]
 # alt = "option"
 
+# Notify sketchybar on workspace change
+exec-on-workspace-change = ['/bin/bash', '-c', 'sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE']
+
 #
 # Use alt as main modifier
 [mode.main.binding]
 
-# focus windows
-alt-left = "focus left"
-alt-down = "focus down"
-alt-up = "focus up"
-alt-right = "focus right"
+# focus windows (vim-style to keep alt+arrows free for macOS word movement)
+alt-h = "focus left"
+alt-j = "focus down"
+alt-k = "focus up"
+alt-l = "focus right"
 
 # move windows
-alt-shift-left = "move left"
-alt-shift-down = "move down"
-alt-shift-up = "move up"
-alt-shift-right = "move right"
+alt-shift-h = "move left"
+alt-shift-j = "move down"
+alt-shift-k = "move up"
+alt-shift-l = "move right"
 
 # splits
 alt-v = "join-with left"
@@ -32,12 +35,16 @@ alt-shift-space = "layout floating tiling"
 # close window
 alt-q = "close"
 
-# Workspace switching
+# Workspace switching (1-9 for numpad)
 ctrl-alt-1 = "workspace 1"
 ctrl-alt-2 = "workspace 2"
 ctrl-alt-3 = "workspace 3"
 ctrl-alt-4 = "workspace 4"
 ctrl-alt-5 = "workspace 5"
+ctrl-alt-6 = "workspace 6"
+ctrl-alt-7 = "workspace 7"
+ctrl-alt-8 = "workspace 8"
+ctrl-alt-9 = "workspace 9"
 
 # move window to workspace
 ctrl-alt-shift-1 = "move-node-to-workspace 1"
@@ -45,6 +52,10 @@ ctrl-alt-shift-2 = "move-node-to-workspace 2"
 ctrl-alt-shift-3 = "move-node-to-workspace 3"
 ctrl-alt-shift-4 = "move-node-to-workspace 4"
 ctrl-alt-shift-5 = "move-node-to-workspace 5"
+ctrl-alt-shift-6 = "move-node-to-workspace 6"
+ctrl-alt-shift-7 = "move-node-to-workspace 7"
+ctrl-alt-shift-8 = "move-node-to-workspace 8"
+ctrl-alt-shift-9 = "move-node-to-workspace 9"
 
 # reset layout
 alt-r = "flatten-workspace-tree"
@@ -59,28 +70,37 @@ alt-enter = "exec-and-forget open -a Kitty"
 # outer.bottom = 8
 # outer.right = 8
 # outer.top = 32
-outer.top        = [{ monitor.main = 0 }, { monitor.secondary = 32 }, 0]
+outer.top        = [{ monitor.main = 0 }, { monitor.secondary = 24 }, 0]
 
 [workspace-to-monitor-force-assignment]
-1 = ['built-in', 'lg']  # laptop screen, fallback
-2 = 'lg'       # external monitor
-3 = 'lg'
-4 = 'lg'
-5 = 'built-in'
-
+# Built-in monitor: 1-4
+1 = ['built-in', 'lg']
+2 = 'built-in'
+3 = 'built-in'
+4 = 'built-in'
+# LG monitor: 5-9
+5 = 'lg'
+6 = 'lg'
+7 = 'lg'
+8 = 'lg'
+9 = 'lg'
 
 [[on-window-detected]]
 if.app-id = "com.apple.Safari"
-run = "move-node-to-workspace 2"
-
-[[on-window-detected]]
-if.app-id = "com.hnc.Discord"
 run = "move-node-to-workspace 5"
 
 [[on-window-detected]]
+if.app-id = "com.hnc.Discord"
+run = "move-node-to-workspace 3"
+
+[[on-window-detected]]
 if.app-id = "net.kovidgoyal.kitty"
-run = "move-node-to-workspace 2"
+run = "move-node-to-workspace 5"
 
 [[on-window-detected]]
 if.app-id = "com.apple.notes"
-run = "move-node-to-workspace 2"
+run = "move-node-to-workspace 6"
+
+[[on-window-detected]]
+if.app-id = "com.apple.MobileSMS"
+run = "move-node-to-workspace 4"

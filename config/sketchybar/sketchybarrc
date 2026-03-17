@@ -79,6 +79,9 @@ sketchybar --default "${defaults[@]}"
 # If you click on it, you can see preferences, activity and lock screen
 source "$ITEM_DIR/apple.sh"
 
+# Aerospace workspace indicators
+source "$ITEM_DIR/aerospace.sh"
+
 # source "$ITEM_DIR/spaces.sh"
 
 # I use yabai, but not sure what this does, I don't see a difference
