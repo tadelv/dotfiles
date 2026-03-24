@@ -5,12 +5,55 @@ return {
     "Davidyz/VectorCode",
     "nvim-telescope/telescope.nvim",
     "nvim-treesitter/nvim-treesitter",
+    "j-hui/fidget.nvim",
   },
+  config = function(_, opts)
+    require("codecompanion").setup(opts)
+
+    local progress = require("fidget.progress")
+    local handles = {}
+
+    vim.api.nvim_create_autocmd("User", {
+      pattern = "CodeCompanionRequestStarted",
+      callback = function(ev)
+        handles[ev.data.id] = progress.handle.create({
+          title = "CodeCompanion",
+          message = "Thinking...",
+          lsp_client = { name = "CodeCompanion" },
+        })
+      end,
+    })
+
+    vim.api.nvim_create_autocmd("User", {
+      pattern = "CodeCompanionRequestStreaming",
+      callback = function(ev)
+        local h = handles[ev.data.id]
+        if h then
+          h.message = "Streaming..."
+        end
+      end,
+    })
+
+    vim.api.nvim_create_autocmd("User", {
+      pattern = "CodeCompanionRequestFinished",
+      callback = function(ev)
+        local h = handles[ev.data.id]
+        if h then
+          h.message = "Done"
+          h:finish()
+          handles[ev.data.id] = nil
+        end
+      end,
+    })
+  end,
   opts = {
     adapters = {
       acp = {
         claude_code = function()
           return require("codecompanion.adapters").extend("claude_code", {
+            commands = {
+              default = { "claude-code-acp", "--dangerously-skip-permissions" },
+            },
             env = {
               CLAUDE_CODE_OAUTH_TOKEN = vim.env.CLAUDE_CODE_OAUTH_TOKEN,
             },
