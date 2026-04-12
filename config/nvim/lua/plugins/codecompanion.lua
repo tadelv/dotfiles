@@ -1,3 +1,14 @@
+local function opencode_zen_key()
+  local path = vim.fn.expand("~/.local/share/opencode/auth.json")
+  local f = io.open(path, "r")
+  if not f then return nil end
+  local content = f:read("*a")
+  f:close()
+  local ok, data = pcall(vim.fn.json_decode, content)
+  if not ok or type(data) ~= "table" then return nil end
+  return data.opencode and data.opencode.key or nil
+end
+
 return {
   "olimorris/codecompanion.nvim",
   dependencies = {
@@ -95,6 +106,40 @@ return {
               model = {
                 default = "qwen2.5-coder:14b-instruct-q6_K",
               },
+            },
+          })
+        end,
+        -- OpenCode Zen: OSS third-party models via /chat/completions router
+        zen = function()
+          return require("codecompanion.adapters").extend("openai", {
+            name = "zen",
+            formatted_name = "OpenCode Zen",
+            env = {
+              api_key = function() return opencode_zen_key() end,
+            },
+            url = "https://opencode.ai/zen/v1/chat/completions",
+            schema = {
+              model = {
+                default = "nemotron-3-super-free",
+                choices = {
+                  -- free tier (no payment method required)
+                  "nemotron-3-super-free",
+                  "minimax-m2.5-free",
+                  "trinity-large-preview-free",
+                  -- paid (requires Zen billing)
+                  "glm-5.1",
+                  "glm-5",
+                  "glm-4.7",
+                  "glm-4.6",
+                  "kimi-k2.5",
+                  "kimi-k2",
+                  "kimi-k2-thinking",
+                  "minimax-m2.5",
+                  "minimax-m2.1",
+                },
+              },
+              max_tokens = { default = 8192 },
+              temperature = { default = 0.3 },
             },
           })
         end,
