@@ -60,8 +60,33 @@ fish_add_path $PYENV_ROOT/bin
 pyenv init - | source
 
 starship init fish | source
+
+# ~/.config/fish/config.fish
+set -gx OLLAMA_NUM_CTX 8192
+set -gx OLLAMA_KEEP_ALIVE 30m
+
+# Podman as Docker replacement
+alias docker=podman
+alias docker-compose=podman-compose
+set -gx DOCKER_HOST "unix:///run/user/501/podman/podman.sock"
+
+# Podman as Docker replacement
+alias docker=podman
+alias docker-compose=podman-compose
+set -gx DOCKER_HOST "unix:///run/user/501/podman/podman.sock"
 # lean-ctx shell hook — begin
 if test -f "/Users/vid/.config/lean-ctx/shell-hook.fish"
 source "/Users/vid/.config/lean-ctx/shell-hook.fish"
 end
 # lean-ctx shell hook — end
+
+# Allow lean-ctx shell commands with warnings instead of blocking.
+set -gx LEAN_CTX_ALLOWLIST_WARN_ONLY 1
+
+# >>> lean-ctx proxy env >>>
+# ANTHROPIC_BASE_URL omitted: Claude Pro/Max subscription authenticates against api.anthropic.com directly (set ANTHROPIC_API_KEY to route Claude through the proxy)
+set -gx OPENAI_BASE_URL "http://127.0.0.1:4444/v1"
+set -gx GEMINI_API_BASE_URL "http://127.0.0.1:4444"
+# Grok proxy env omitted: run `grok login` (subscription) or set XAI_API_KEY to route Grok through lean-ctx
+# Command Code omitted (no ~/.commandcode auth — run `cmd login` or set COMMAND_CODE_API_KEY)
+# <<< lean-ctx proxy env <<<

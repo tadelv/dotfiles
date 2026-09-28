@@ -7,3 +7,4 @@ vim.api.nvim_create_user_command("PDFExport", myf.ExportPDF, { nargs = "*" })
 -- vim.api.nvim_create_user_command("HLWord", function(opts)
 --   myf.HLHighlightWord(opts.args)
 -- end, { nargs = 1 })
+--
