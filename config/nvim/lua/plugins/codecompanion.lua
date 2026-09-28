@@ -75,27 +75,6 @@ return {
         end,
       },
       http = {
-        -- DeepSeek: chat + inline fallback
-        deepseek = function()
-          return require("codecompanion.adapters").extend("openai", {
-            env = {
-              api_key = vim.env.DEEPSEEK_API_KEY,
-            },
-            url = os.getenv("DEEPSEEK_API_BASE") or "https://api.deepseek.com",
-            supports_tools = false,
-            schema = {
-              model = {
-                default = "deepseek-chat",
-                choices = {
-                  "deepseek-chat",
-                  "deepseek-coder",
-                },
-              },
-              max_tokens = { default = 8192 },
-              temperature = { default = 0.3 },
-            },
-          })
-        end,
         -- Ollama: local models on artemis
         ollama = function()
           return require("codecompanion.adapters").extend("ollama", {
@@ -125,7 +104,6 @@ return {
                   -- free tier (no payment method required)
                   "nemotron-3-super-free",
                   "minimax-m2.5-free",
-                  "trinity-large-preview-free",
                   -- paid (requires Zen billing)
                   "glm-5.1",
                   "glm-5",
@@ -162,7 +140,7 @@ return {
     },
     interactions = {
       chat = {
-        adapter = "claude_code",
+        adapter = "deepseek",
         opts = {
           system_prompt = function(ctx)
             return string.format(

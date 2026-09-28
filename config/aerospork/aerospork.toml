@@ -1,0 +1,104 @@
+# AeroSpork config (v2). Your previous config is next to this file as *.pre-v2.
+# `mod` generates the i3 defaults and one binding per workspace; anything in [keys] wins.
+
+after-startup-command = [ 'exec-and-forget sketchybar --reload' ]
+# exec-on-workspace-change = [
+#     '/bin/bash',
+#     '-c',
+#     'sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPORK_FOCUSED_WORKSPACE'
+# ]
+
+# start-at-login = true
+
+automatically-unhide-macos-hidden-apps = true
+
+# Force every workspace to tiles on switch: containers keep their runtime layout otherwise,
+# and the startup heuristic can flip one to accordion when it has >3 windows.
+on-focused-workspace-changed = ['exec-and-forget sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPORK_FOCUSED_WORKSPACE', 'layout tiles']
+
+default-root-container-layout = 'tiles'   # tiles | accordion
+[gaps.outer]
+top = [ { monitor = { main = 0 } }, { monitor = { secondary = 24 } }, 0 ]
+
+[keys]
+alt-b = 'join-with up'
+alt-enter = 'exec-and-forget open -a Kitty'
+alt-equal = 'resize smart +50'
+alt-f = 'fullscreen'
+alt-h = 'focus left'
+alt-j = 'focus down'
+alt-k = 'focus up'
+alt-l = 'focus right'
+alt-minus = 'resize smart -50'
+alt-q = 'close'
+alt-r = 'flatten-workspace-tree'
+alt-shift-h = 'move left'
+alt-shift-j = 'move down'
+alt-shift-k = 'move up'
+alt-shift-l = 'move right'
+alt-shift-space = 'layout floating tiling'
+alt-v = 'join-with left'
+ctrl-alt-1 = 'workspace 1'
+ctrl-alt-2 = 'workspace 2'
+ctrl-alt-3 = 'workspace 3'
+ctrl-alt-4 = 'workspace 4'
+ctrl-alt-5 = 'workspace 5'
+ctrl-alt-6 = 'workspace 6'
+ctrl-alt-7 = 'workspace 7'
+ctrl-alt-8 = 'workspace 8'
+ctrl-alt-9 = 'workspace 9'
+ctrl-alt-shift-1 = 'move-node-to-workspace 1'
+ctrl-alt-shift-2 = 'move-node-to-workspace 2'
+ctrl-alt-shift-3 = 'move-node-to-workspace 3'
+ctrl-alt-shift-4 = 'move-node-to-workspace 4'
+ctrl-alt-shift-5 = 'move-node-to-workspace 5'
+ctrl-alt-shift-6 = 'move-node-to-workspace 6'
+ctrl-alt-shift-7 = 'move-node-to-workspace 7'
+ctrl-alt-shift-8 = 'move-node-to-workspace 8'
+ctrl-alt-shift-9 = 'move-node-to-workspace 9'
+
+
+[[on-window-detected]]
+run = 'move-node-to-workspace 3'
+
+    [on-window-detected.if]
+    app-id = 'com.hnc.Discord'
+
+[[on-window-detected]]
+run = 'move-node-to-workspace 5'
+
+    [on-window-detected.if]
+    app-id = 'net.kovidgoyal.kitty'
+
+[[on-window-detected]]
+run = 'move-node-to-workspace 4'
+
+    [on-window-detected.if]
+    app-id = 'com.apple.MobileSMS'
+
+[[on-window-detected]]
+run = 'move-node-to-workspace 2'
+
+    [on-window-detected.if]
+    app-id = 'net.tadel.reaprime'
+
+
+
+[monitors]
+1 = { fingerprint = { uuid = '37D8832A-2D66-02CA-B9F7-8F30A301B230' } }
+2 = { fingerprint = { uuid = '37D8832A-2D66-02CA-B9F7-8F30A301B230' } }
+3 = { fingerprint = { uuid = '37D8832A-2D66-02CA-B9F7-8F30A301B230' } }
+4 = { fingerprint = { uuid = '37D8832A-2D66-02CA-B9F7-8F30A301B230' } }
+5 = { fingerprint = { uuid = '9317E1E6-3456-464C-AF61-E697C57347FC' } }
+6 = { fingerprint = { uuid = '9317E1E6-3456-464C-AF61-E697C57347FC' } }
+7 = { fingerprint = { uuid = '9317E1E6-3456-464C-AF61-E697C57347FC' } }
+8 = { fingerprint = { uuid = '9317E1E6-3456-464C-AF61-E697C57347FC' } }
+9 = { fingerprint = { uuid = '9317E1E6-3456-464C-AF61-E697C57347FC' } }
+
+
+
+
+
+
+[key-mapping]
+preset = 'qwerty'

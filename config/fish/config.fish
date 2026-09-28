@@ -60,3 +60,8 @@ fish_add_path $PYENV_ROOT/bin
 pyenv init - | source
 
 starship init fish | source
+# lean-ctx shell hook — begin
+if test -f "/Users/vid/.config/lean-ctx/shell-hook.fish"
+source "/Users/vid/.config/lean-ctx/shell-hook.fish"
+end
+# lean-ctx shell hook — end

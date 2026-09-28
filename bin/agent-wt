@@ -1,0 +1,682 @@
+mkdir -p "$HOME/.local/bin"
+
+cat > "$HOME/.local/bin/agent-wt" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+###############################################################################
+# agent-wt
+#
+# Small Git worktree manager intended for parallel coding-agent sessions.
+#
+# Commands:
+#
+#   agent-wt issue <number>
+#   agent-wt pr <number>
+#   agent-wt list
+#   agent-wt status
+#   agent-wt status --json
+#   agent-wt rm <name>
+#
+# Examples:
+#
+#   agent-wt issue 907
+#   agent-wt issue '#907'
+#   agent-wt pr 905
+#   agent-wt status
+#   agent-wt status --json
+#   agent-wt rm issue-907
+#   agent-wt rm pr-905
+#
+# By default, worktrees are created next to the primary repository:
+#
+#   ~/src/decaid
+#   ~/src/decaid-worktrees/issue-907
+#   ~/src/decaid-worktrees/pr-905
+#
+# Override with:
+#
+#   export AGENT_WORKTREE_ROOT="$HOME/worktrees/decaid"
+#
+###############################################################################
+
+die() {
+  echo "error: $*" >&2
+  exit 1
+}
+
+warn() {
+  echo "warning: $*" >&2
+}
+
+require_command() {
+  command -v "$1" >/dev/null 2>&1 ||
+    die "required command not found: $1"
+}
+
+require_command git
+require_command gh
+
+###############################################################################
+# Locate primary repository
+#
+# git --git-common-dir resolves to the primary repository's .git directory
+# even when invoked from inside a linked worktree.
+###############################################################################
+
+git_common_dir="$(
+  git rev-parse --path-format=absolute --git-common-dir 2>/dev/null
+)" || die "not inside a Git repository"
+
+repo_root="$(dirname "$git_common_dir")"
+repo_name="$(basename "$repo_root")"
+
+worktree_root="${AGENT_WORKTREE_ROOT:-$(dirname "$repo_root")/${repo_name}-worktrees}"
+
+mkdir -p "$worktree_root"
+
+###############################################################################
+# Helpers
+###############################################################################
+
+usage() {
+  cat <<EOF_USAGE
+Usage:
+  agent-wt issue <number>
+  agent-wt pr <number>
+  agent-wt list
+  agent-wt status
+  agent-wt status --json
+  agent-wt rm <name>
+
+Examples:
+  agent-wt issue 907
+  agent-wt issue '#907'
+  agent-wt pr 905
+
+  agent-wt status
+  agent-wt status --json
+
+  agent-wt rm issue-907
+  agent-wt rm pr-905
+
+Repository:
+  $repo_root
+
+Worktree root:
+  $worktree_root
+EOF_USAGE
+}
+
+require_number() {
+  local value="${1:-}"
+
+  [[ "$value" =~ ^#?[0-9]+$ ]] ||
+    die "expected an issue/PR number, got: ${value:-<empty>}"
+
+  echo "${value#\#}"
+}
+
+default_branch() {
+  gh repo view \
+    --json defaultBranchRef \
+    --jq '.defaultBranchRef.name'
+}
+
+json_escape() {
+  local s="${1-}"
+
+  s=${s//\\/\\\\}
+  s=${s//\"/\\\"}
+  s=${s//$'\n'/\\n}
+  s=${s//$'\r'/\\r}
+  s=${s//$'\t'/\\t}
+
+  printf '%s' "$s"
+}
+
+json_string_or_null() {
+  if [[ -n "${1:-}" ]]; then
+    printf '"%s"' "$(json_escape "$1")"
+  else
+    printf 'null'
+  fi
+}
+
+###############################################################################
+# Create issue worktree
+###############################################################################
+
+create_issue() {
+  local number
+  number="$(require_number "${1:-}")"
+
+  local name="issue-$number"
+  local branch="agent/issue-$number"
+  local path="$worktree_root/$name"
+
+  [[ ! -e "$path" ]] ||
+    die "worktree path already exists: $path"
+
+  local state title
+
+  IFS=$'\t' read -r state title < <(
+    gh issue view "$number" \
+      --json state,title \
+      --jq '[.state, .title] | @tsv'
+  )
+
+  [[ "$state" == "OPEN" ]] ||
+    die "issue #$number is $state"
+
+  local base
+  base="$(default_branch)"
+
+  echo "Issue #$number: $title"
+  echo "Base:        origin/$base"
+  echo "Branch:      $branch"
+  echo "Worktree:    $path"
+  echo
+
+  echo "Fetching origin/$base..."
+  git -C "$repo_root" fetch origin "$base"
+
+  if git -C "$repo_root" show-ref \
+    --verify \
+    --quiet "refs/heads/$branch"
+  then
+    die "local branch already exists: $branch"
+  fi
+
+  git -C "$repo_root" worktree add \
+    -b "$branch" \
+    "$path" \
+    "origin/$base"
+
+  echo
+  echo "Ready:"
+  echo "  $path"
+  echo
+  echo "Branch:"
+  echo "  $branch"
+}
+
+###############################################################################
+# Create PR worktree
+###############################################################################
+
+create_pr() {
+  local number
+  number="$(require_number "${1:-}")"
+
+  local name="pr-$number"
+  local path="$worktree_root/$name"
+
+  [[ ! -e "$path" ]] ||
+    die "worktree path already exists: $path"
+
+  if ! gh pr checkout --help | grep -q -- '--worktree'; then
+    die "installed GitHub CLI does not support 'gh pr checkout --worktree'; upgrade gh first"
+  fi
+
+  local state title head base
+
+  IFS=$'\t' read -r state title head base < <(
+    gh pr view "$number" \
+      --json state,title,headRefName,baseRefName \
+      --jq '[.state, .title, .headRefName, .baseRefName] | @tsv'
+  )
+
+  [[ "$state" == "OPEN" ]] ||
+    die "PR #$number is $state"
+
+  echo "PR #$number: $title"
+  echo "Head:       $head"
+  echo "Base:       $base"
+  echo "Worktree:   $path"
+  echo
+
+  (
+    cd "$repo_root"
+    gh pr checkout "$number" --worktree "$path"
+  )
+
+  echo
+  echo "Ready:"
+  echo "  $path"
+}
+
+###############################################################################
+# Remove worktree
+###############################################################################
+
+remove_worktree() {
+  local name="${1:-}"
+
+  [[ -n "$name" ]] ||
+    die "missing worktree name"
+
+  # Don't permit arbitrary paths here.
+  [[ "$name" != */* ]] ||
+    die "pass the worktree name, not a path"
+
+  local path="$worktree_root/$name"
+
+  [[ -d "$path" ]] ||
+    die "managed worktree does not exist: $path"
+
+  echo "Removing:"
+  echo "  $path"
+  echo
+
+  # Deliberately no --force.
+  #
+  # If an agent has uncommitted work, Git will refuse to remove the
+  # worktree rather than silently destroying it.
+  git -C "$repo_root" worktree remove "$path"
+
+  git -C "$repo_root" worktree prune
+
+  echo
+  echo "Removed."
+  echo
+  echo "Note: the local branch itself has NOT been deleted."
+}
+
+###############################################################################
+# Human / JSON status
+###############################################################################
+
+status_worktrees() {
+  local json=false
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --json)
+        json=true
+        ;;
+
+      *)
+        die "unknown status option: $1"
+        ;;
+    esac
+
+    shift
+  done
+
+  local base
+  base="$(default_branch)"
+
+  #
+  # Refresh origin/<default-branch> so baseAhead/baseBehind are useful.
+  # Remain usable when offline.
+  #
+  if ! git -C "$repo_root" fetch --quiet origin "$base" 2>/dev/null; then
+    if [[ "$json" == false ]]; then
+      warn "could not refresh origin/$base; using existing local refs"
+    fi
+  fi
+
+  if [[ "$json" == false ]]; then
+    printf "%-18s %-32s %-10s %-15s %-12s\n" \
+      "WORKTREE" \
+      "BRANCH" \
+      "STATUS" \
+      "COMMITS" \
+      "GITHUB"
+
+    printf "%-18s %-32s %-10s %-15s %-12s\n" \
+      "------------------" \
+      "--------------------------------" \
+      "----------" \
+      "---------------" \
+      "------------"
+  else
+    printf '[\n'
+  fi
+
+  local found=0
+  local first_json=true
+
+  while IFS= read -r path; do
+    #
+    # Only report worktrees below our managed root.
+    #
+    [[ "$path" == "$worktree_root/"* ]] || continue
+
+    found=1
+
+    local name
+    local kind
+    local number
+    local github
+    local branch
+    local detached
+    local head
+    local dirty
+
+    local upstream
+    local upstream_ahead
+    local upstream_behind
+
+    local base_ahead
+    local base_behind
+
+    local commits
+
+    name="$(basename "$path")"
+
+    ###########################################################################
+    # Worktree identity
+    ###########################################################################
+
+    case "$name" in
+      issue-*)
+        kind="issue"
+        number="${name#issue-}"
+        github="#$number"
+        ;;
+
+      pr-*)
+        kind="pr"
+        number="${name#pr-}"
+        github="PR #$number"
+        ;;
+
+      *)
+        kind="other"
+        number=""
+        github="-"
+        ;;
+    esac
+
+    ###########################################################################
+    # Branch / HEAD
+    ###########################################################################
+
+    branch="$(
+      git -C "$path" symbolic-ref \
+        --quiet \
+        --short HEAD 2>/dev/null || true
+    )"
+
+    if [[ -n "$branch" ]]; then
+      detached=false
+    else
+      detached=true
+    fi
+
+    head="$(
+      git -C "$path" rev-parse HEAD 2>/dev/null || true
+    )"
+
+    ###########################################################################
+    # Dirty state
+    ###########################################################################
+
+    if [[ -n "$(git -C "$path" status --porcelain 2>/dev/null)" ]]; then
+      dirty=true
+    else
+      dirty=false
+    fi
+
+    ###########################################################################
+    # Configured upstream divergence
+    #
+    # Answers:
+    #   "Has this agent changed the remote branch it started from?"
+    ###########################################################################
+
+    upstream="$(
+      git -C "$path" rev-parse \
+        --abbrev-ref \
+        --symbolic-full-name '@{upstream}' \
+        2>/dev/null || true
+    )"
+
+    upstream_ahead=""
+    upstream_behind=""
+
+    if [[ -n "$upstream" ]]; then
+      upstream_ahead="$(
+        git -C "$path" rev-list \
+          --count "${upstream}..HEAD" \
+          2>/dev/null || true
+      )"
+
+      upstream_behind="$(
+        git -C "$path" rev-list \
+          --count "HEAD..${upstream}" \
+          2>/dev/null || true
+      )"
+    fi
+
+    ###########################################################################
+    # Default branch divergence
+    #
+    # Answers:
+    #   "How different is this worktree from origin/main?"
+    ###########################################################################
+
+    base_ahead=""
+    base_behind=""
+
+    if git -C "$path" rev-parse \
+      --verify "origin/$base" >/dev/null 2>&1
+    then
+      base_ahead="$(
+        git -C "$path" rev-list \
+          --count "origin/$base..HEAD" \
+          2>/dev/null || true
+      )"
+
+      base_behind="$(
+        git -C "$path" rev-list \
+          --count "HEAD..origin/$base" \
+          2>/dev/null || true
+      )"
+    fi
+
+    ###########################################################################
+    # Human-readable commit summary
+    ###########################################################################
+
+    if [[ -n "$upstream" ]]; then
+      if [[ "$upstream_ahead" == "0" && "$upstream_behind" == "0" ]]; then
+        commits="synced"
+
+      elif [[ "$upstream_behind" == "0" ]]; then
+        commits="↑$upstream_ahead"
+
+      elif [[ "$upstream_ahead" == "0" ]]; then
+        commits="↓$upstream_behind"
+
+      else
+        commits="↑$upstream_ahead ↓$upstream_behind"
+      fi
+
+    elif [[ -n "$base_ahead" ]]; then
+      if [[ "$base_ahead" == "0" ]]; then
+        commits="0"
+      else
+        commits="+$base_ahead"
+      fi
+
+    else
+      commits="?"
+    fi
+
+    ###########################################################################
+    # Human output
+    ###########################################################################
+
+    if [[ "$json" == false ]]; then
+      local status_text
+
+      if [[ "$dirty" == true ]]; then
+        status_text="dirty"
+      else
+        status_text="clean"
+      fi
+
+      printf "%-18s %-32s %-10s %-15s %-12s\n" \
+        "$name" \
+        "${branch:-(detached)}" \
+        "$status_text" \
+        "$commits" \
+        "$github"
+
+      continue
+    fi
+
+    ###########################################################################
+    # JSON output
+    ###########################################################################
+
+    if [[ "$first_json" == false ]]; then
+      printf ',\n'
+    fi
+
+    first_json=false
+
+    printf '  {\n'
+
+    printf '    "name": "%s",\n' \
+      "$(json_escape "$name")"
+
+    printf '    "path": "%s",\n' \
+      "$(json_escape "$path")"
+
+    printf '    "kind": "%s",\n' \
+      "$(json_escape "$kind")"
+
+    if [[ -n "$number" && "$number" =~ ^[0-9]+$ ]]; then
+      printf '    "number": %d,\n' "$number"
+    else
+      printf '    "number": null,\n'
+    fi
+
+    printf '    "branch": '
+    json_string_or_null "$branch"
+    printf ',\n'
+
+    printf '    "detached": %s,\n' "$detached"
+
+    printf '    "head": '
+    json_string_or_null "$head"
+    printf ',\n'
+
+    printf '    "dirty": %s,\n' "$dirty"
+
+    printf '    "upstream": '
+    json_string_or_null "$upstream"
+    printf ',\n'
+
+    printf '    "upstreamAhead": '
+    if [[ -n "$upstream_ahead" ]]; then
+      printf '%d' "$upstream_ahead"
+    else
+      printf 'null'
+    fi
+    printf ',\n'
+
+    printf '    "upstreamBehind": '
+    if [[ -n "$upstream_behind" ]]; then
+      printf '%d' "$upstream_behind"
+    else
+      printf 'null'
+    fi
+    printf ',\n'
+
+    printf '    "base": "origin/%s",\n' \
+      "$(json_escape "$base")"
+
+    printf '    "baseAhead": '
+    if [[ -n "$base_ahead" ]]; then
+      printf '%d' "$base_ahead"
+    else
+      printf 'null'
+    fi
+    printf ',\n'
+
+    printf '    "baseBehind": '
+    if [[ -n "$base_behind" ]]; then
+      printf '%d' "$base_behind"
+    else
+      printf 'null'
+    fi
+    printf '\n'
+
+    printf '  }'
+
+  done < <(
+    git -C "$repo_root" worktree list --porcelain |
+      awk '/^worktree / {
+        sub(/^worktree /, "")
+        print
+      }'
+  )
+
+  if [[ "$json" == true ]]; then
+    printf '\n]\n'
+
+  elif [[ "$found" == "0" ]]; then
+    echo
+    echo "No managed agent worktrees."
+  fi
+}
+
+###############################################################################
+# Command dispatcher
+###############################################################################
+
+command="${1:-}"
+
+if [[ $# -gt 0 ]]; then
+  shift
+fi
+
+case "$command" in
+  issue)
+    create_issue "${1:-}"
+    ;;
+
+  pr)
+    create_pr "${1:-}"
+    ;;
+
+  list)
+    git -C "$repo_root" worktree list
+    ;;
+
+  status)
+    status_worktrees "$@"
+    ;;
+
+  rm|remove)
+    remove_worktree "${1:-}"
+    ;;
+
+  -h|--help|help|"")
+    usage
+    ;;
+
+  *)
+    die "unknown command: $command"
+    ;;
+esac
+EOF
+
+chmod +x "$HOME/.local/bin/agent-wt"
+
+# Add ~/.local/bin to PATH for zsh if it isn't there already.
+if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+  printf '\nexport PATH="$HOME/.local/bin:$PATH"\n' >> "$HOME/.zshrc"
+  export PATH="$HOME/.local/bin:$PATH"
+fi
+
+echo "Installed: $HOME/.local/bin/agent-wt"
+echo
+echo "Try:"
+echo "  cd /path/to/decaid"
+echo "  agent-wt --help"

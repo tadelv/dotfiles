@@ -93,9 +93,9 @@ outer.top        = [{ monitor.main = 0 }, { monitor.secondary = 24 }, 0]
 8 = 'lg'
 9 = 'lg'
 
-[[on-window-detected]]
-if.app-id = "com.apple.Safari"
-run = "move-node-to-workspace 5"
+# [[on-window-detected]]
+# if.app-id = "com.apple.Safari"
+# run = "move-node-to-workspace 5"
 
 [[on-window-detected]]
 if.app-id = "com.hnc.Discord"
@@ -105,10 +105,14 @@ run = "move-node-to-workspace 3"
 if.app-id = "net.kovidgoyal.kitty"
 run = "move-node-to-workspace 5"
 
-[[on-window-detected]]
-if.app-id = "com.apple.notes"
-run = "move-node-to-workspace 6"
+# [[on-window-detected]]
+# if.app-id = "com.apple.notes"
+# run = "move-node-to-workspace 6"
 
 [[on-window-detected]]
 if.app-id = "com.apple.MobileSMS"
 run = "move-node-to-workspace 4"
+
+[[on-window-detected]]
+if.app-id = "net.tadel.reaprime"
+run = "move-node-to-workspace 2"
