@@ -8,3 +8,22 @@ htoprc
 
 # stupid gtk
 config/gtk-2.0
+
+# credentials / tokens — public repo, never track these
+config/gh/hosts.yml
+config/gcloud/
+config/firebase/
+config/basecamp/
+config/basecamp-mcp/
+config/configstore/
+config/google-analytics-cli/
+config/portainer/
+config/mcphub/
+config/opencode/
+config/containers/
+config/fish/private.fish
+config/herdr/session.json
+**/*.pem
+**/credentials.json
+**/sa-key.json
+**/*.bak*
