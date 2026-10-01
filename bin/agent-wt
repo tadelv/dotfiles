@@ -1,6 +1,3 @@
-mkdir -p "$HOME/.local/bin"
-
-cat > "$HOME/.local/bin/agent-wt" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -188,7 +185,10 @@ create_issue() {
     die "local branch already exists: $branch"
   fi
 
+  # --no-track: start from origin/$base but do not set the new branch's
+  # upstream to it. Otherwise pushing from the worktree targets main.
   git -C "$repo_root" worktree add \
+    --no-track \
     -b "$branch" \
     "$path" \
     "origin/$base"
@@ -665,18 +665,3 @@ case "$command" in
     die "unknown command: $command"
     ;;
 esac
-EOF
-
-chmod +x "$HOME/.local/bin/agent-wt"
-
-# Add ~/.local/bin to PATH for zsh if it isn't there already.
-if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
-  printf '\nexport PATH="$HOME/.local/bin:$PATH"\n' >> "$HOME/.zshrc"
-  export PATH="$HOME/.local/bin:$PATH"
-fi
-
-echo "Installed: $HOME/.local/bin/agent-wt"
-echo
-echo "Try:"
-echo "  cd /path/to/decaid"
-echo "  agent-wt --help"
