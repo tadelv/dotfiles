@@ -215,7 +215,9 @@ create_pr() {
   [[ ! -e "$path" ]] ||
     die "worktree path already exists: $path"
 
-  if ! gh pr checkout --help | grep -q -- '--worktree'; then
+  # No grep -q here: it exits on the first match, SIGPIPEs gh, and under
+  # pipefail that turns a present flag into a failed pipeline (false negative).
+  if ! gh pr checkout --help 2>&1 | grep -- '--worktree' >/dev/null; then
     die "installed GitHub CLI does not support 'gh pr checkout --worktree'; upgrade gh first"
   fi
 
