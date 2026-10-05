@@ -140,6 +140,16 @@ json_string_or_null() {
   fi
 }
 
+# Worktrees must not inherit an upstream. A worktree branch created from a
+# remote-tracking start point (and gh pr checkout's PR fork) otherwise carries
+# an upstream, so a bare push can target origin/main or a contributor fork.
+# Dropping the upstream keeps the first push free to establish the intended
+# tracking with `git push -u origin <branch>`. Idempotent.
+detach_upstream() {
+  local path="${1:-}"
+  git -C "$path" branch --unset-upstream >/dev/null 2>&1 || true
+}
+
 ###############################################################################
 # Create issue worktree
 ###############################################################################
@@ -193,6 +203,8 @@ create_issue() {
     "$path" \
     "origin/$base"
 
+  detach_upstream "$path"
+
   echo
   echo "Ready:"
   echo "  $path"
@@ -242,6 +254,8 @@ create_pr() {
     cd "$repo_root"
     gh pr checkout "$number" --worktree "$path"
   )
+
+  detach_upstream "$path"
 
   echo
   echo "Ready:"
