@@ -1,13 +1,14 @@
 /**
  * CodeGraph CWD guidance - when the session runs inside a configured repository
- * root, tell the agent to use the structural code graph and what to do when no
- * index exists yet.
+ * root, tell the agent to use the structural code graph and to create the index
+ * if it is missing.
  *
  * Roots come from `codegraphRoots` in ~/.pi/agent/private.json. With no roots
  * configured, or a cwd outside them, nothing is injected.
  *
- * This extension only adds guidance. It does not create, sync, or modify an
- * index - `@estebanforge/pi-codegraph-enhanced` owns index maintenance.
+ * Configured roots are auto-indexed: `codegraph-auto-index` is enabled, so
+ * `@estebanforge/pi-codegraph-enhanced` creates and maintains the index. This
+ * extension only adds guidance; index maintenance stays with that package.
  */
 
 import { existsSync, readFileSync } from "node:fs";
@@ -60,11 +61,12 @@ export default function (pi: ExtensionAPI) {
         ]
       : [
           "## CodeGraph",
-          "This work is inside a configured repository root but there is no CodeGraph index",
-          "(.codegraph) for it.",
-          "If the task would benefit from structural navigation, ask the operator whether to create",
-          "one before doing so: indexing writes .codegraph/ and runs `codegraph init -i`. Do not",
-          "create an index unprompted.",
+          "This work is inside a configured repository root, which is auto-indexed, but no",
+          ".codegraph index exists here yet.",
+          "Create it rather than asking: `codegraph init -i` builds the graph in one step, and",
+          "`/codegraph init` does the same on demand. Once `.codegraph/` exists, prefer the",
+          "`codegraph_*` tools for architecture, call-site, impact, and \"where is X defined or",
+          "used\" questions.",
         ];
 
     return { systemPrompt: `${event.systemPrompt}\n\n${section.join("\n")}` };
