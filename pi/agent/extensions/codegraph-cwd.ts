@@ -6,9 +6,10 @@
  * Roots come from `codegraphRoots` in ~/.pi/agent/private.json. With no roots
  * configured, or a cwd outside them, nothing is injected.
  *
- * Configured roots are auto-indexed: `codegraph-auto-index` is enabled, so
- * `@estebanforge/pi-codegraph-enhanced` creates and maintains the index. This
- * extension only adds guidance; index maintenance stays with that package.
+ * Configured roots are indexed on demand, not automatically: `codegraph-auto-index` is disabled
+ * so `@estebanforge/pi-codegraph-enhanced` never creates an index on its own (it still keeps
+ * existing ones fresh). This extension is the trigger - inside a configured root it tells the agent
+ * to create the index when it is missing.
  */
 
 import { existsSync, readFileSync } from "node:fs";
@@ -61,12 +62,12 @@ export default function (pi: ExtensionAPI) {
         ]
       : [
           "## CodeGraph",
-          "This work is inside a configured repository root, which is auto-indexed, but no",
+          "This work is inside a configured repository root and should be indexed, but no",
           ".codegraph index exists here yet.",
-          "Create it rather than asking: `codegraph init -i` builds the graph in one step, and",
-          "`/codegraph init` does the same on demand. Once `.codegraph/` exists, prefer the",
-          "`codegraph_*` tools for architecture, call-site, impact, and \"where is X defined or",
-          "used\" questions.",
+          "Index it before structural work: `codegraph init -i` builds the graph in one step, and",
+          "`/codegraph init` does the same on demand. Do not ask first - these roots are meant to be",
+          "indexed. Then prefer the `codegraph_*` tools for architecture, call-site, impact, and",
+          "\"where is X defined or used\" questions.",
         ];
 
     return { systemPrompt: `${event.systemPrompt}\n\n${section.join("\n")}` };

@@ -117,7 +117,9 @@ Run the repository's real gates yourself, the same commands CI runs. Then clean 
 
 - revert any tracked file a gate mutated that the task did not ask to change;
 - revert repo-wide formatter churn when the tree was committed under an older SDK (keep the diff scoped);
-- prove any failure is pre-existing by stashing your changes and re-running the same test at `HEAD`.
+- prove any failure is pre-existing by stashing your changes and re-running the same test at `HEAD`;
+- if a gate produces a long transcript, filter it with `codemode` (failures and counts, not the whole
+  log) instead of archiving and expanding it later.
 
 ## Phase 3 — dispatch the reviewer
 
@@ -268,6 +270,23 @@ Build lane tasks in a script file and validate it before spending child budget
 (`subagent({ action: 'validate', workflow: './lanes.js' })`). It catches a template literal that
 closed early — the usual cause is an unescaped backtick inside a task string.
 
+### Use `codemode` for fan-out and filtering, not as a mode
+
+`codemode` is a model-facing tool: a JavaScript sandbox that calls other tools and returns only what
+you keep. It does **not** change how children dispatch their tools, so it is safe to use alongside
+`subagent` — unlike a fabric-style full code mode, which takes over tool execution and leaves every
+child shown an executor it does not have. Three places it pays for itself:
+
+- **Lane board.** One call instead of N shells: run `agent-wt status --json`, `git -C <wt> status
+  --short` and `gh pr checks` across every lane, and return only `{name, dirty, baseBehind, checks}`.
+- **Gate output.** Filter a long build/test run down to the failing lines and counts instead of
+  archiving the transcript and expanding it later.
+- **Review packets.** Assemble diff stat, changed files and criteria in one script rather than
+  several reads.
+
+Keep the sandbox in mind: it has no filesystem or network of its own, so it can only orchestrate the
+tools it is given.
+
 ### A nested worker loses `bash` — the lane lead authors
 
 A worker launched *by a lane lead* is a depth-2 child, and pi withholds **`bash`** from it — a
@@ -403,12 +422,11 @@ label is a claim, not evidence: re-run the gate before trusting the restored tre
     repo's `AGENTS.md`, which lanes need — and `inheritGlobalContext: false` does not suppress
     `~/.pi/agent/AGENTS.md`, which still arrives as project context.
 
-11. **Check the session's fabric mode before dispatching.** If the orchestrator session runs fabric
-    in full code mode, that propagates to `subagent` children: they are shown `fabric_exec` but have
-    no executor, so every lane is tool-less and reports `Tool fabric_exec not found`. Lanes require
-    orchestration-only mode — `~/.pi/agent/fabric.json` containing `"fullCodeMode": false`, which is
-    **not** the default. `Schema → Mode: enforce` forces the same exclusive path and must be off
-    too.
+11. **A child's tool list is exactly its frontmatter `tools:`.** Never assume a parent's mode, flags,
+    or installed extensions give a child a tool. Pi also *drops* some tools at depth (see "A nested
+    worker loses `bash`"), so a child can be narrower than its own declaration. Confirm a capability
+    with `subagent({ action: 'status', id })` before relying on it, and treat a child that reports a
+    missing tool as having told you the truth rather than failed.
 
 12. **A nested child's `contact_supervisor` reaches its parent, not the orchestrator.** A depth-2
     reviewer that calls `contact_supervisor` with `reason: "need_decision"` sends its request to the
