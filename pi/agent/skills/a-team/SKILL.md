@@ -94,7 +94,7 @@ It probes each OpenRouter model for two protocol failures — tool calls emitted
 ## Phase 1 — the lane lead authors
 
 **Default: the lane lead writes the change.** A nested `ateam-worker` is a depth-2 child and pi
-withholds `bash` from it (see "A nested worker loses `bash`"), so it cannot run the gate or prove
+withholds `bash` from it (see "A worker child loses `bash` at any depth"), so it cannot run the gate or prove
 red→green. Dispatch it only for shell-free text edits that the lead will validate. The rest of
 this phase describes that optional worker path; skip it when in doubt.
 
@@ -287,16 +287,21 @@ child shown an executor it does not have. Three places it pays for itself:
 Keep the sandbox in mind: it has no filesystem or network of its own, so it can only orchestrate the
 tools it is given.
 
-### A nested worker loses `bash` — the lane lead authors
+### A worker child loses `bash` at any depth — the lane lead authors
 
-A worker launched *by a lane lead* is a depth-2 child, and pi withholds **`bash`** from it — a
-child-safety default, not a setting you can toggle. Verified from the child's own session: an
-`ateam-worker` declaring `read, grep, find, ls, bash, edit, write` resolved to
+`bash` is withheld from an `ateam-worker` child **regardless of who launches it or how deep it sits**
+— a child-safety default, not a setting you can toggle. Verified twice: an `ateam-worker` declaring
+`read, grep, find, ls, bash, edit, write` resolved to
 `read, grep, find, ls, edit, write, contact_supervisor` — `bash` silently dropped, `edit`/`write`
-kept. Without `bash` it cannot run a gate, so it cannot produce red→green evidence and will
-correctly refuse.
+kept — once as a depth-2 child of a lane lead, and once as a **depth-1 child of the orchestrator
+itself**. An `ateam-lead` at the same depth *keeps* `bash`; the only declared difference is the
+orchestrator role (`subagent` in `tools:` plus `allowNestedSubagents: true`), so that is the likely
+discriminator — not depth.
 
-So do not build a lane around a nested worker. **The lane lead (depth 1) keeps `bash`: it authors
+Without `bash` a worker cannot run a gate, so it cannot produce red→green evidence, and it will
+correctly refuse to pretend otherwise. Do not build a lane that needs a shell around one.
+
+So do not build a lane around a worker child. **The lane lead keeps `bash`: it authors
 the change and runs the gate itself**, exactly as Phase 2 describes. `ateam-worker` is not part of
 the default lane; use it only for work that needs no shell (pure text edits the lead validates),
 and check its tools first with `subagent({ action: 'status', id })` — if `bash` is absent, collapse
@@ -423,8 +428,9 @@ label is a claim, not evidence: re-run the gate before trusting the restored tre
     `~/.pi/agent/AGENTS.md`, which still arrives as project context.
 
 11. **A child's tool list is exactly its frontmatter `tools:`.** Never assume a parent's mode, flags,
-    or installed extensions give a child a tool. Pi also *drops* some tools at depth (see "A nested
-    worker loses `bash`"), so a child can be narrower than its own declaration. Confirm a capability
+    or installed extensions give a child a tool. Pi also *drops* some tools from children (see "A
+    worker child loses `bash` at any depth"), so a child can be narrower than its own declaration.
+    Confirm a capability
     with `subagent({ action: 'status', id })` before relying on it, and treat a child that reports a
     missing tool as having told you the truth rather than failed.
 
