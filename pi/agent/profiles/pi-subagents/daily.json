@@ -1,0 +1,36 @@
+{
+  "subagents": {
+    "agentOverrides": {
+      "ateam-worker": {
+        "model": "openai-codex/gpt-5.6-luna:high"
+      },
+      "ateam-reviewer": {
+        "model": "openai-codex/gpt-6.1-sol:high"
+      },
+      "worker": {
+        "model": "openai-codex/gpt-5.6-luna:high"
+      },
+      "reviewer": {
+        "model": "openai-codex/gpt-6.1-sol:high"
+      },
+      "oracle": {
+        "model": "openai-codex/gpt-6.1-sol:high"
+      },
+      "advisor": {
+        "model": "openai-codex/gpt-6.1-sol:high"
+      },
+      "researcher": {
+        "model": "openai-codex/gpt-5.6-luna:medium"
+      },
+      "evidence-auditor": {
+        "model": "openai-codex/gpt-5.6-luna:medium"
+      },
+      "scout": {
+        "model": "deepseek/deepseek-flash:low"
+      },
+      "delegate": {
+        "model": "deepseek/deepseek-flash:low"
+      }
+    }
+  }
+}

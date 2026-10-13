@@ -1,0 +1,36 @@
+{
+  "subagents": {
+    "agentOverrides": {
+      "ateam-worker": {
+        "model": "openrouter/nex-agi/nex-n2.5-pro:free"
+      },
+      "ateam-reviewer": {
+        "model": "openai-codex/gpt-6.1-sol:high"
+      },
+      "worker": {
+        "model": "openrouter/nex-agi/nex-n2.5-pro:free"
+      },
+      "reviewer": {
+        "model": "openai-codex/gpt-6.1-sol:high"
+      },
+      "oracle": {
+        "model": "openrouter/nvidia/nemotron-3-super-120b-a12b:free"
+      },
+      "advisor": {
+        "model": "openrouter/nvidia/nemotron-3-super-120b-a12b:free"
+      },
+      "researcher": {
+        "model": "openrouter/nex-agi/nex-n2.5-pro:free"
+      },
+      "evidence-auditor": {
+        "model": "openrouter/nex-agi/nex-n2.5-pro:free"
+      },
+      "scout": {
+        "model": "openrouter/nex-agi/nex-n2.5-mini:free"
+      },
+      "delegate": {
+        "model": "openrouter/nex-agi/nex-n2.5-mini:free"
+      }
+    }
+  }
+}

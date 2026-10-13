@@ -1,0 +1,27 @@
+# --- secrets ---
+agent/auth.json
+agent/private.json
+
+# --- per-machine state / absolute paths ---
+agent/trust.json
+agent/settings.json.bak*
+agent/fabric/
+
+# --- runtime state ---
+agent/sessions/
+agent/missions/
+agent/pi-subagents/
+agent/run-history.jsonl
+agent/pi-debug.log
+agent/models-store.json
+
+# --- derived: reinstalled from settings.json "packages" ---
+agent/npm/
+agent/git/
+agent/bin/
+agent/install/
+agent/extensions.disabled/
+
+# --- caches / backups ---
+*.bak*
+**/mcp-schema-cache.json
