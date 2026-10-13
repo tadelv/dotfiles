@@ -93,8 +93,8 @@ It probes each OpenRouter model for two protocol failures — tool calls emitted
 
 ## Phase 1 — the lane lead authors
 
-**Default: the lane lead writes the change.** A nested `ateam-worker` is a depth-2 child and pi
-withholds `bash` from it (see "A worker child loses `bash` at any depth"), so it cannot run the gate or prove
+**Default: the lane lead writes the change.** An `ateam-worker` child never gets `bash` — at any
+depth (see "A worker child loses `bash` at any depth") — so it cannot run the gate or prove
 red→green. Dispatch it only for shell-free text edits that the lead will validate. The rest of
 this phase describes that optional worker path; skip it when in doubt.
 
@@ -414,7 +414,7 @@ label is a claim, not evidence: re-run the gate before trusting the restored tre
 5. **Do not trust a free worker's summary of its own state.** In practice a timed-out free worker left a correct one-line fix, a test that could not pass, a doc comment with a duplicated word, and two unrelated files modified. Salvaging took minutes; trusting the report would have shipped all four problems.
 6. **Keep the reviewer read-only — but give it a mouth.** It verifies by reading; the parent supplies executed evidence. Read-only means no mutation tools, not no escalation channel: a reviewer with no way to ask a question can burn its entire timeout and return no verdict at all (observed in practice). Keep `contact_supervisor` in its tool list.
 7. **Prefer native mechanisms.** If you are writing routing logic, fallback handling, or a model picker, check `docs/models.md` first — it is probably already there.
-8. **Task-specific constraints override the generic phases — and say so explicitly.** A lane brief will sometimes forbid something a phase mandates. Observed twice in one session: a lead asked whether to dispatch the worker after being told not to (nested workers get no shell), and whether to skip the repo-wide test suite that Phase 2 names. Both times the brief was right and the phase default was wrong for that environment. When you write a lane brief, state that the brief wins where it conflicts, and why — otherwise every lead burns a turn re-litigating it.
+8. **Task-specific constraints override the generic phases — and say so explicitly.** A lane brief will sometimes forbid something a phase mandates. Observed twice in one session: a lead asked whether to dispatch the worker after being told not to (worker children get no shell), and whether to skip the repo-wide test suite that Phase 2 names. Both times the brief was right and the phase default was wrong for that environment. When you write a lane brief, state that the brief wins where it conflicts, and why — otherwise every lead burns a turn re-litigating it.
 9. **Skipping a check is not the same as omitting it.** When a check cannot run in the current environment, record it as *declining a check that cannot produce a signal here*: prove it fails identically on unmodified HEAD, and say where CI does run it. "Not run because it always fails on macOS" is evidence; "not run" is an unexplained gap.
 
 10. **Inherited project context advertises tools the agent does not have.** A subagent session loads
