@@ -9,11 +9,13 @@
  * is disabled so `@estebanforge/pi-codegraph-enhanced` never creates an index on
  * its own (it still keeps existing ones fresh). This extension is the trigger -
  * inside a configured root it tells the agent to create the index when it is
- * missing. The upward search for `.codegraph` stops at the matched root, so a
- * parent directory's index is never mistaken for this repo's.
+ * missing. The upward search for `.codegraph` stops at the matched root, and a `.codegraph`
+ * directory only counts as an index when it also holds `codegraph.db`, so neither a parent
+ * project's index nor the CLI's global `~/.codegraph` state directory is mistaken for this
+ * repo's.
  */
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve, sep } from "node:path";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
@@ -46,10 +48,20 @@ function matchingRoot(target: string, roots: string[]): string | undefined {
     .sort((a, b) => b.length - a.length)[0];
 }
 
+function hasIndex(dir: string): boolean {
+  const codegraph = join(dir, ".codegraph");
+  try {
+    if (!statSync(codegraph).isDirectory()) return false;
+  } catch {
+    return false;
+  }
+  return existsSync(join(codegraph, "codegraph.db"));
+}
+
 function findIndexDir(start: string, root: string): string | undefined {
   let dir = resolve(start);
   for (;;) {
-    if (existsSync(join(dir, ".codegraph"))) return dir;
+    if (hasIndex(dir)) return dir;
     if (dir === root) return undefined;
     const parent = resolve(dir, "..");
     if (parent === dir) return undefined;
@@ -87,7 +99,7 @@ export default function (pi: ExtensionAPI) {
           "## CodeGraph",
           "This work is inside a configured repository root and should be indexed, but no",
           ".codegraph index exists here yet.",
-          "Index it before structural work: `codegraph init -i` builds the graph in one step, and",
+          "Index it before structural work: `codegraph init` builds the graph in one step, and",
           "`/codegraph init` does the same on demand. Do not ask first - these roots are meant to be",
           "indexed. Then prefer the `codegraph_*` tools for architecture, call-site, impact, and",
           "\"where is X defined or used\" questions.",
