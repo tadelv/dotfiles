@@ -162,7 +162,13 @@ packet and you supply all executed evidence.
 4. **Pass 2 — one cross-exam.** Resume each reviewer with the *other's* disputed claims, labelled as a
    peer's claim and not as fact. Read-only reviewers cannot run anything, so they settle disputes by
    reading source, not by testing. One pass, no loop for polish.
-5. **Synthesis — you write the verdict.** An agreement is not proof: two models can share a training
+5. **Close the dispute.** Any claim still contradicted by its author — including a rebuttal that
+   arrived after you sent the packets — must be settled before it reaches the report: relay it back to
+   the author for one reply, or resolve it yourself from primary source. Never hand over an unresolved
+   "A says X, B says not-X". In the run that produced this section, one reviewer's only *blocking*
+   finding looked decisive until the CLI's own docs showed the assumption behind it was wrong; the peer
+   who downgraded it was right, and neither reviewer could have settled it alone.
+6. **Synthesis — you write the verdict.** An agreement is not proof: two models can share a training
    blind spot, and both can be wrong the same way. Verify every disputed or single-source claim
    against the source yourself before it enters the review or changes the code.
 

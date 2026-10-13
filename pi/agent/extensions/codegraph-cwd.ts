@@ -7,10 +7,11 @@
  * configured, or a cwd outside them, nothing is injected.
  *
  * Indexes are created on demand, not automatically: `codegraph-auto-index` is
- * disabled so `@estebanforge/pi-codegraph-enhanced` never creates one, and it
- * refreshes an existing index only when the session starts in that index's own
- * directory. This extension is the trigger - inside a configured root it tells
- * the agent to index the directory when no index covers it. The upward search
+ * disabled so `@estebanforge/pi-codegraph-enhanced` never creates one. It
+ * refreshes only an index in the session's own directory, while the codegraph
+ * CLI daemon keeps the nearest ancestor index fresh once the tools are used.
+ * This extension is the trigger - inside a configured root it tells the agent
+ * to index the directory when no index covers it. The upward search
  * stops at the matched root, and a `.codegraph` directory counts as an index
  * only when it also holds `codegraph.db` as a file, so neither the CLI's global
  * `~/.codegraph` state directory nor an unrelated ancestor is mistaken for one.
@@ -113,8 +114,8 @@ export default function (pi: ExtensionAPI) {
       ? [
           "## CodeGraph",
           `An index applies to this directory: ${indexDir}/.codegraph (the CLI resolves upward like git,`,
-          "so a parent index also covers subdirectories). If results look stale, run `codegraph sync`",
-          "in that directory - it is re-synced automatically only when a session starts in it.",
+          "so a parent index also covers subdirectories). If results look stale after a large change,",
+          "run `codegraph sync` in that directory before trusting them.",
         ]
       : [
           "## CodeGraph",
