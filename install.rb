@@ -30,4 +30,17 @@ Dir.chdir File.dirname(__FILE__) do
       puts "restored: #{entry} -> #{target}"
     end
   end
+
+  # Optional companions the Pi config references but does not ship. They live
+  # outside this repo, so a fresh machine silently lacks them.
+  referenced = {
+    "~/.agents/skills/karpathy-guidelines" => File.join(home, ".agents/skills/karpathy-guidelines"),
+    "~/development/AGENTS.md" => File.join(home, "development/AGENTS.md"),
+  }
+  missing = referenced.reject { |_label, path| File.exist?(path) }
+  unless missing.empty?
+    puts "⚠ Pi config references paths missing on this machine:"
+    missing.each_key { |label| puts "    #{label}" }
+    puts "    The a-team agents read these. Create or link them, or update the agent prompts."
+  end
 end
