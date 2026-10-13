@@ -137,6 +137,38 @@ subagent({ agent: 'ateam-reviewer', cwd: '<worktree>', async: true, task: '<revi
 
 Include in its task: the diff path, files to read for context, the numbered acceptance criteria, the scope constraints, your validation transcripts, and any environment caveats that are **not** part of the change. Ask for the verdict, per-requirement confirmations with `file:line`, and a false-positive assessment of each new test.
 
+For a public contract, a security-shaped change, or a diff you cannot cheaply re-verify, escalate to **Phase 3b — panel review** below.
+
+### Phase 3b — panel review (two models, one cross-exam)
+
+Escalation of Phase 3 for changes where a single verdict is not enough. Two reviewers on **different
+models** report independently, then answer each other's disputed claims. The model diversity *is* the
+mechanism: two passes of the same model share its blind spots, and a second opinion from a different
+model found a live bug today that the primary reviewer pass missed.
+
+The pass mechanics come from `council-mode` (read its `references/pass-contracts.md`); this is the
+review-shaped application of them. Reviewers are read-only with no shell, so both get the *same*
+packet and you supply all executed evidence.
+
+1. **Roster.** Two reviewers, two different models — the profile's reviewer plus one second opinion,
+   passed as a per-run `model:` on the `subagent` call. Never two builds of the same model, and never
+   three or more: the marginal reviewer buys little and costs a full pass.
+2. **Pass 1 — independent.** One `runs.all` with keys `review-a` / `review-b`, both given the same
+   packet (diff path, numbered criteria, non-goals, your gate transcripts). Neither sees the other
+   before it reports.
+3. **Claim matrix — you, in the parent.** Sort the findings into agreements, disputes, claims only one
+   reviewer could support, and claims neither can. Relay at most five material claims per reviewer;
+   never forward a whole transcript.
+4. **Pass 2 — one cross-exam.** Resume each reviewer with the *other's* disputed claims, labelled as a
+   peer's claim and not as fact. Read-only reviewers cannot run anything, so they settle disputes by
+   reading source, not by testing. One pass, no loop for polish.
+5. **Synthesis — you write the verdict.** An agreement is not proof: two models can share a training
+   blind spot, and both can be wrong the same way. Verify every disputed or single-source claim
+   against the source yourself before it enters the review or changes the code.
+
+Stop at convergence or after one cross-exam. A panel is for *finding*; the parent still owns the
+verdict. Nested reviewers' `contact_supervisor` requests reach **you** — resolve them (rule 12).
+
 ## Phase 4 — close out
 
 Apply blocking fixes (verify them against the code; a strong reviewer is usually right, but check). Then: confirm `git status --short` shows only intended files, delete the temporary diff, commit/push or update the PR **only if asked**, and report what changed, the red/green evidence, validation results, the verdict, and residual risk.

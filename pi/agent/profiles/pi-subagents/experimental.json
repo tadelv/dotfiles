@@ -1,0 +1,36 @@
+{
+  "subagents": {
+    "agentOverrides": {
+      "ateam-worker": {
+        "model": "opencode-go/longcat-2.5-preview-free"
+      },
+      "ateam-reviewer": {
+        "model": "opencode-go/step-5-preview-free"
+      },
+      "worker": {
+        "model": "opencode-go/longcat-2.5-preview-free"
+      },
+      "reviewer": {
+        "model": "opencode-go/step-5-preview-free"
+      },
+      "oracle": {
+        "model": "opencode-go/muse-spark-1.3-contributor"
+      },
+      "advisor": {
+        "model": "opencode-go/muse-spark-1.3-contributor"
+      },
+      "researcher": {
+        "model": "opencode-go/longcat-2.5-preview-free"
+      },
+      "evidence-auditor": {
+        "model": "opencode-go/step-5-preview-free"
+      },
+      "scout": {
+        "model": "opencode-go/deepseek-v4-flash"
+      },
+      "delegate": {
+        "model": "opencode-go/deepseek-v4-flash"
+      }
+    }
+  }
+}
