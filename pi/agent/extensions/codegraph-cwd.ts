@@ -1,15 +1,16 @@
 /**
  * CodeGraph CWD guidance - when the session runs inside a configured repository
- * root, tell the agent to use the structural code graph and to create the index
- * if it is missing.
+ * root, tell the agent to use the structural code graph and when to index.
  *
  * Roots come from `codegraphRoots` in ~/.pi/agent/private.json. With no roots
  * configured, or a cwd outside them, nothing is injected.
  *
- * Configured roots are indexed on demand, not automatically: `codegraph-auto-index` is disabled
- * so `@estebanforge/pi-codegraph-enhanced` never creates an index on its own (it still keeps
- * existing ones fresh). This extension is the trigger - inside a configured root it tells the agent
- * to create the index when it is missing.
+ * Configured roots are indexed on demand, not automatically: `codegraph-auto-index`
+ * is disabled so `@estebanforge/pi-codegraph-enhanced` never creates an index on
+ * its own (it still keeps existing ones fresh). This extension is the trigger -
+ * inside a configured root it tells the agent to create the index when it is
+ * missing. The upward search for `.codegraph` stops at the matched root, so a
+ * parent directory's index is never mistaken for this repo's.
  */
 
 import { existsSync, readFileSync } from "node:fs";
@@ -19,46 +20,68 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 const PRIVATE_FILE = join(homedir(), ".pi/agent/private.json");
 
-function codegraphRoots(): string[] {
+function expandRoot(raw: string): string {
+  const root = raw.trim();
+  if (root === "~") return homedir();
+  return resolve(root.startsWith("~/") ? join(homedir(), root.slice(2)) : root);
+}
+
+function loadRoots(): { roots: string[]; invalid: boolean } {
   try {
-    const roots = JSON.parse(readFileSync(PRIVATE_FILE, "utf-8")).codegraphRoots;
-    if (!Array.isArray(roots)) return [];
-    return roots
+    const configured = JSON.parse(readFileSync(PRIVATE_FILE, "utf-8")).codegraphRoots;
+    if (!Array.isArray(configured)) return { roots: [], invalid: configured !== undefined };
+    const roots = configured
       .filter((root: unknown): root is string => typeof root === "string" && root.trim().length > 0)
-      .map((root: string) => resolve(root.startsWith("~/") ? join(homedir(), root.slice(2)) : root));
+      .map(expandRoot);
+    return { roots, invalid: roots.length !== configured.length };
   } catch {
-    return [];
+    return { roots: [], invalid: false };
   }
 }
 
-function isInside(target: string, roots: string[]): boolean {
+function matchingRoot(target: string, roots: string[]): string | undefined {
   const here = resolve(target);
-  return roots.some((root) => here === root || here.startsWith(root + sep));
+  return roots
+    .filter((root) => here === root || here.startsWith(root + sep))
+    .sort((a, b) => b.length - a.length)[0];
 }
 
-function findIndexDir(start: string): string | undefined {
+function findIndexDir(start: string, root: string): string | undefined {
   let dir = resolve(start);
   for (;;) {
     if (existsSync(join(dir, ".codegraph"))) return dir;
+    if (dir === root) return undefined;
     const parent = resolve(dir, "..");
     if (parent === dir) return undefined;
+    if (!(parent === root || parent.startsWith(root + sep))) return undefined;
     dir = parent;
   }
 }
 
 export default function (pi: ExtensionAPI) {
-  pi.on("before_agent_start", async (event, ctx) => {
-    const roots = codegraphRoots();
-    if (roots.length === 0 || !isInside(ctx.cwd, roots)) return;
+  let reportedInvalid = false;
 
-    const indexDir = findIndexDir(ctx.cwd);
+  pi.on("before_agent_start", async (event, ctx) => {
+    if (!ctx.cwd) return;
+    const { roots, invalid } = loadRoots();
+    if (invalid && !reportedInvalid) {
+      reportedInvalid = true;
+      ctx.ui.notify(
+        "codegraphRoots in ~/.pi/agent/private.json is not an array of paths - no CodeGraph guidance is injected",
+        "info",
+      );
+    }
+    const root = matchingRoot(ctx.cwd, roots);
+    if (!root) return;
+
+    const indexDir = findIndexDir(ctx.cwd, root);
     const section = indexDir
       ? [
           "## CodeGraph",
           `This work is inside an indexed repository (${indexDir}/.codegraph).`,
           "For architecture, call-site, impact, or \"where is X defined or used\" questions, prefer",
-          "the `codegraph_*` tools over grep/read. If results look stale after a large change, run",
-          "`codegraph sync` (or `codegraph status` to inspect) before searching.",
+          "the `codegraph_*` tools over grep/read. The index is kept fresh automatically; if results",
+          "still look stale, `codegraph status` inspects it.",
         ]
       : [
           "## CodeGraph",
