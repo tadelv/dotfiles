@@ -160,6 +160,13 @@ detach_upstream() {
 # the whole tree. Best-effort: an index is never required for the worktree to be
 # usable, so every failure warns instead of aborting. Skip with
 # AGENT_WT_SEED_CODEGRAPH=0.
+#
+# ISSUE WORKTREES ONLY. The seed is valid only because an issue lane is cut from
+# origin/<default> at creation, so it starts as the indexed tree and the seed
+# describes it. A PR checkout is divergent by design - it is never cut from the
+# indexed tree - so seeding one would describe the wrong code from the first
+# second. Do not call this from create_pr; a PR worktree runs its own
+# 'codegraph init'.
 seed_codegraph_index() {
   local wt="$1"
   local src="$repo_root/.codegraph"
