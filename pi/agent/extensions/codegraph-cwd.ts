@@ -15,9 +15,11 @@
  * stops at the matched root, and a `.codegraph` directory counts as an index
  * only when it also holds `codegraph.db` as a file, so neither the CLI's global
  * `~/.codegraph` state directory nor an unrelated ancestor is mistaken for one.
+ * Roots and the session cwd are canonicalised with realpath before comparison,
+ * so a symlinked root still matches.
  */
 
-import { readFileSync, statSync } from "node:fs";
+import { readFileSync, realpathSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { isAbsolute, join, resolve, sep } from "node:path";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
@@ -40,10 +42,18 @@ function supportedRoot(raw: string): boolean {
   return root === "~" || root.startsWith("~/") || isAbsolute(root);
 }
 
+function canonical(path: string): string {
+  try {
+    return realpathSync(path);
+  } catch {
+    return path;
+  }
+}
+
 function expandRoot(raw: string): string {
   const root = raw.trim();
-  if (root === "~") return homedir();
-  return resolve(root.startsWith("~/") ? join(homedir(), root.slice(2)) : root);
+  if (root === "~") return canonical(homedir());
+  return canonical(resolve(root.startsWith("~/") ? join(homedir(), root.slice(2)) : root));
 }
 
 function loadRoots(): { roots: string[]; problem?: RootProblem } {
@@ -101,15 +111,16 @@ export default function (pi: ExtensionAPI) {
 
   pi.on("before_agent_start", async (event, ctx) => {
     if (!ctx.cwd) return;
+    const cwd = canonical(ctx.cwd);
     const { roots, problem } = loadRoots();
     if (problem !== reported) {
       reported = problem;
       if (problem) ctx.ui.notify(PROBLEM_MESSAGES[problem], "info");
     }
-    const root = matchingRoot(ctx.cwd, roots);
+    const root = matchingRoot(cwd, roots);
     if (!root) return;
 
-    const indexDir = indexFor(ctx.cwd, root);
+    const indexDir = indexFor(cwd, root);
     const section = indexDir
       ? [
           "## CodeGraph",
@@ -125,6 +136,6 @@ export default function (pi: ExtensionAPI) {
           "architecture, call-site, impact, and \"where is X defined or used\" questions.",
         ];
 
-    return { systemPrompt: `${event.systemPrompt ?? ""}\n\n${section.join("\n")}` };
+    return { systemPrompt: `${event.systemPrompt}\n\n${section.join("\n")}` };
   });
 }
