@@ -154,6 +154,35 @@ detach_upstream() {
 # Create issue worktree
 ###############################################################################
 
+# Seed a new worktree with the main checkout's CodeGraph index. The index stores
+# only root-relative paths and no project root, so it relocates cleanly; the
+# worktree's engine then syncs the branch delta on first use instead of parsing
+# the whole tree. Best-effort: an index is never required for the worktree to be
+# usable, so every failure warns instead of aborting. Skip with
+# AGENT_WT_SEED_CODEGRAPH=0.
+seed_codegraph_index() {
+  local wt="$1"
+  local src="$repo_root/.codegraph"
+  local dst="$wt/.codegraph"
+
+  [[ "${AGENT_WT_SEED_CODEGRAPH:-1}" == "1" ]] || return 0
+  [[ -f "$src/codegraph.db" ]] || return 0
+  [[ ! -e "$dst/codegraph.db" ]] || return 0
+
+  mkdir -p "$dst"
+  # codegraph.db* also takes -wal/-shm when present, so a live WAL is copied
+  # together with its database instead of being torn. daemon.log, pids and
+  # sockets are deliberately left behind.
+  if ! cp -p "$src"/codegraph.db* "$dst"/ 2>/dev/null; then
+    rm -rf "$dst"
+    warn "could not seed the CodeGraph index into $wt - run 'codegraph init' there"
+    return 0
+  fi
+
+  echo "CodeGraph:   seeded from $repo_root/.codegraph"
+  echo "             (run 'codegraph sync' in the worktree to reconcile the branch)"
+}
+
 create_issue() {
   local number
   number="$(require_number "${1:-}")"
@@ -204,6 +233,8 @@ create_issue() {
     "origin/$base"
 
   detach_upstream "$path"
+
+  seed_codegraph_index "$path"
 
   echo
   echo "Ready:"
