@@ -68,6 +68,87 @@ Routing is **native to pi-subagents** — this skill is the protocol, not a rout
 
 Pi-subagents no longer switches models during a launch. If a model fails, fix the profile or make a later, explicit retry; do not hand-roll a fallback loop or silently change execution mode.
 
+### Provider limit fallback — an explicit retry ladder, not an in-launch fallback
+
+There is no automatic model fallback inside a launch, and there must not be one: a child that
+switches provider mid-run hides which model produced the work. When a provider returns a usage
+limit, **you** retry, naming the next model explicitly, and you record the switch.
+
+Configured ladder on this machine (probed 2026-10-21, one child each; ids resolved from the loaded profile):
+
+| Step | Lead (`ateam-lead`) | Worker / researcher | Reviewer / oracle |
+| --- | --- | --- | --- |
+| 1 | `openai-codex/gpt-6.1-sol` | `openai-codex/gpt-5.6-luna` | `openai-codex/gpt-6.1-sol` |
+| 2 | `opencode-go/muse-spark-1.3-contributor` | same | same |
+| 3 | `deepseek/deepseek-flash` | `deepseek/deepseek-flash:low` | `deepseek/deepseek-flash` |
+
+Probe result: sol, luna, muse-spark and deepseek-flash all answered. `opencode-go/longcat-2.5-preview-free` — the old worker rung — returned `402 server_error: Upstream request failed: Endpoint is unavailable.`, so that free endpoint has been withdrawn and must not be routed to. Free tiers are what die first: re-probe this table before trusting it after a gap of weeks.
+
+Rules that keep the ladder honest:
+
+- A limit is a **provider** failure: same task, same worktree, different model. Do not rewrite the
+  task to fit the cheaper model, and never let a retry arrive as a different execution mode
+  (`interactive_shell`, `pi -ne`, another CLI).
+- Retry **once per step**. A step that fails on anything other than a limit is a task failure: fix
+  the task rather than climbing past it.
+- Say which step you are on, in the lane report and in your own final report. A run that quietly
+  moved to step 3 carries different evidence quality, and the operator is entitled to know.
+- After a switch, re-check the child's tool list (`subagent({action:"status", id})`): a cheaper model
+  is likelier to mis-declare a capability, and the shell/tool gaps documented below are exactly
+  what that check catches. Keep verification on the strongest reviewer available — that is the one
+  place a cheap model is a false economy.
+
+### What a dead provider looks like — and the cheap pre-flight
+
+`pi auth check --model <id>` returning `{"status":"ready"}` proves **only** that a credential
+exists. It reported `ready` for every one of the shapes below, so treat it as a key-presence check,
+not a capacity check:
+
+| Shape | What you see on the first turn | Retry? |
+| --- | --- | --- |
+| Spend cap on the key | `403 permission_error`, `"Key limit exceeded (total limit)… $0.00 of $0.00 used; does not reset"` (OpenRouter) | not on this key — climb |
+| Empty account | `403` / quota error before any token | not on this provider — climb |
+| Free tier kept for its own client | `403 FreeTierError: OpenCode's free tier can only be used from within OpenCode` | never from pi — skip that step |
+| Id not in the active registry | `Unknown subagent model 'x' in the active Pi model registry` | fix the id, don't climb |
+| Endpoint withdrawn | `402 server_error: Upstream request failed: Endpoint is unavailable.` | not on this model — climb |
+
+All four fail **on turn one**, at 0 tokens and $0. That is the cheap case, but a 3-wide fan-out turns
+one dead model into three dead runs and still trips the overseer's `session-failure-streak` — which
+reports credentials, not code. So probe with **one** throwaway child (`scout`, "say hi") before any
+fan-out, and rotate only once it answers.
+
+An id rejected by the registry spawns **no run at all**, so an empty `subagent({action:"runs"})`
+after a launch is a launch failure, not a suspiciously fast success.
+
+A child that answers is only half the check: the other half is whether it can hold an agent loop.
+`scripts/probe_models.py` covers that class — tool calls emitted as text (stalls after turn one) and
+tool results rejected outright (200 on turn one, 400 on the turn two) — one line per model, non-zero
+exit if any fail. Run it after editing a profile, or when a lane stalls with no error to show.
+
+### Reading a "repeated mutating tool failures" signal
+
+A lead that trips this signal is usually **not** blocked — it is composing bad commands, or chasing a
+gate that cannot run here. Triage in three steps before spending a steer:
+
+1. **Status, not alarm.** `subagent({action:"status", id})` — still running? which step?
+2. **Check the tree.** `git -C <worktree> status --short`. A malformed redirection can *create* a file
+   (a stray `&1`, `null`), and a mid-write tree is normal — but real product work in a clean tree
+   means the lane is fine and only its command pattern is broken.
+3. **Then steer with the diagnosis**, not with encouragement. Two classes recur, both model-side and
+   neither a capability problem:
+   - **Output pasted back as input** — a diffstat line (`bash: path | 288 +++---`), a numbered context
+     line, a hunk header. The shell was handed evidence and asked to execute it.
+   - **Redirection fragments run as commands** — `bash(&1;)`, `bash(/dev/null;)`, `bash(>)`: pieces of
+     `2>&1` or `> /dev/null` split off into calls of their own.
+
+The steer that works names the rule: *one plain command per call; no `;`, `>`, `2>&1` or pipes; never
+paste tool output back as a command; let the tool compress long output instead of piping to
+`head`/`tail`.* Then **make it structural**: put the same discipline in the lane brief, because the
+next lane on that model hits it too. A failure class that recurs across lanes is a brief defect, not
+a run defect.
+
+### Recovery: preserve before discarding
+
 Thinking level does not set the price — the model tier does, and a worker is output-token-heavy (reasoning plus generated code). Measured $/M in→out: `sol` 5→30, `astra` 10→50, `luna` 0.2→1.2, `deepseek-flash` 0.3→1.2. So `sol:low` is a *more expensive* worker than `luna:high` despite the lower effort: low thinking trims output tokens, it does not change a 25x output price.
 
 Each profile covers the whole team — `ateam-worker`, `ateam-reviewer` and the builtin `worker`, `reviewer`, `oracle`/`advisor`, `researcher`, `evidence-auditor`, `scout`, `delegate` — because **loading a profile replaces the entire `agentOverrides` map** (unrelated keys like `disableBuiltins`, `modelScope`, `watchdog` survive). External CLI agents (`claude-code-*`, `codex-exec-*`, `cursor-agent-*`) are deliberately not listed: their model comes from their own runner, not from a pi model id.
@@ -91,19 +172,24 @@ python3 ~/.pi/agent/skills/a-team/scripts/probe_models.py --show-free  # live fr
 
 It probes each OpenRouter model for two protocol failures — tool calls emitted as text instead of structured `tool_calls`, and tool results rejected on turn two — then prints a verdict and exits non-zero if a model is unusable. Non-OpenRouter models are reported as not probed (they need their own provider API). Run it after editing a profile, and when a run fails in a way that looks like the model rather than the task.
 
-## Phase 1 — the lane lead authors
+## Phase 1 — the worker authors, the lead orchestrates
 
-**Default: the lane lead writes the change.** An `ateam-worker` child never gets `bash` — at any
-depth (see "A worker child loses `bash` at any depth") — so it cannot run the gate or prove
-red→green. Dispatch it only for shell-free text edits that the lead will validate. The rest of
-this phase describes that optional worker path; skip it when in doubt.
+**Default: dispatch an `ateam-worker` for the implementation and let the lead validate and review
+it.** The worker runs a real shell (`ctx_shell`) and proves its own red→green; see "A worker child
+has no `bash` — give it `ctx_shell`" for the mechanism and the trap that used to make this
+impossible. Keep the lead's hands off the product diff: a lead that writes the change has nothing
+left to validate independently, and the worker's separate context is half the value of the team.
 
-If you do use a worker: launch it async with fresh context; you are woken on completion, then
-validate. (`context: 'fresh'` is that agent's default — pass it explicitly only if you changed it.)
+Dispatch the worker async with fresh context; you are woken on completion, then validate.
+(`context: 'fresh'` is that agent's default — pass it explicitly only if you changed it.)
 
 ```
 subagent({ agent: 'ateam-worker', cwd: '<worktree>', async: true, task: '<task>' })
 ```
+
+The lead may author directly only when the change is genuinely shell-free (pure text), when the
+worker has already failed twice on the same task, or when the task is under ~10 lines — and it must
+say so in its report.
 
 **Do not pass `model:` by default.** The configured profile supplies the model for this launch. If it is unusable, fix the profile or make a later explicit retry with an approved exact model; do not hand-roll fallback or silently switch execution modes.
 
@@ -325,32 +411,75 @@ child shown an executor it does not have. Three places it pays for itself:
 Keep the sandbox in mind: it has no filesystem or network of its own, so it can only orchestrate the
 tools it is given.
 
-### A worker child loses `bash` at any depth — the lane lead authors
+### A worker child has no `bash` — give it `ctx_shell`
 
-`bash` is withheld from an `ateam-worker` child **regardless of who launches it or how deep it sits**
-— a child-safety default, not a setting you can toggle. Verified twice: an `ateam-worker` declaring
-`read, grep, find, ls, bash, edit, write` resolved to
-`read, grep, find, ls, edit, write, contact_supervisor` — `bash` silently dropped, `edit`/`write`
-kept — once as a depth-2 child of a lane lead, and once as a **depth-1 child of the orchestrator
-itself**. An `ateam-lead` at the same depth *keeps* `bash`; the only declared difference is the
-orchestrator role (`subagent` in `tools:` plus `allowNestedSubagents: true`), so that is the likely
-discriminator — not depth.
+`bash` is absent from a child whose shell is routed through lean-ctx. This is **not** a pi-subagents
+child-safety default and not a depth rule: the `pi-lean-ctx` extension, in its default additive mode
+with `routeShell: true` (`~/.pi/agent/extensions/pi-lean-ctx/config.json`), registers a
+`session_start` handler that filters `bash` out of the active tool set and replaces it with
+`ctx_shell`.
 
-Without `bash` a worker cannot run a gate, so it cannot produce red→green evidence, and it will
-correctly refuse to pretend otherwise. Do not build a lane that needs a shell around one.
+That collides with how pi-subagents launches children. A child's tool list is exactly its agent
+frontmatter `tools:` allowlist, and that allowlist also filters **extension** tools: lean-ctx's
+`ctx_*` tools are registered but dropped from the session because the allowlist does not name them.
+So a worker declaring `read, grep, find, ls, bash, edit, write` resolves to
+`read, grep, find, ls, edit, write, contact_supervisor` — `bash` suppressed by lean-ctx, `ctx_shell`
+filtered out by the allowlist, and no shell at all. `edit`/`write` stay, which is what makes the
+failure quiet: the worker looks fully equipped and only fails at the first gate.
 
-So do not build a lane around a worker child. **The lane lead keeps `bash`: it authors
-the change and runs the gate itself**, exactly as Phase 2 describes. `ateam-worker` is not part of
-the default lane; use it only for work that needs no shell (pure text edits the lead validates),
-and check its tools first with `subagent({ action: 'status', id })` — if `bash` is absent, collapse
-immediately instead of waiting for it to park in `contact_supervisor`. Independent verification is
-unaffected: the read-only `ateam-reviewer` needs no shell. State the deviation in the report.
+Why it looks random: lean-ctx's `session_start` filter races pi's own allowlist refresh, which
+re-activates every allowlisted tool on the next tool registration. A child that registers another
+tool *after* the filter (a coordinator with `allowNestedSubagents: true`) gets `bash` back; a plain
+worker does not. That is why `ateam-lead` has `bash` and `ateam-worker` does not, at the same depth
+— observed directly, twice, and it is the discriminator, not the orchestrator role the earlier
+version of this note guessed.
 
-### Research and audit children lose `bash` *and* `write` — worse than the worker case
+**The fix is two entries in the worker's frontmatter.** `ateam-worker.md` now declares:
 
-The same withholding hits read-only research, where it does more damage, because searching *is* the
-method. Verified on a real run: a `researcher` declaring `read, write, web_search, bash` and an
-`evidence-auditor` declaring `read, web_search, bash` both reported **no shell and no write tool**.
+```yaml
+tools: read, grep, find, ls, edit, write, ctx_shell, bash
+subagentOnlyExtensions: /Users/vid/.pi/agent/npm/node_modules/pi-lean-ctx/extensions/index.ts
+```
+
+`tools:` names the replacement so the allowlist stops filtering it. `subagentOnlyExtensions:` is
+required for the *foreground* case: a blocking child never loads the parent's ambient extensions, so
+lean-ctx is absent, `ctx_shell` is never registered, and a strict allowlist naming it fails the whole
+launch ("these child tools were unavailable: ctx_shell"). The explicit path loads lean-ctx into the
+child either way. Both verified:
+
+| Launch | Resolved tools | Shell |
+| --- | --- | --- |
+| `async: true` | `read, grep, find, ls, edit, write, ctx_shell, contact_supervisor` | `ctx_shell` exit 0 |
+| `async: false` | `read, grep, find, ls, edit, write, ctx_shell, contact_supervisor` | `ctx_shell` exit 0 |
+
+The path is absolute and machine-specific, which is fine for `~/.pi/agent/agents/`; if the worker is
+copied to another host, drop `subagentOnlyExtensions` and launch workers `async: true` only. Note that
+`bash` stays in the allowlist and is present on hosts without lean-ctx, where `ctx_shell` simply is not
+registered.
+
+So a lane **can** be built around a worker child. Two things still hold:
+
+- Confirm the shell before spending the run: `subagent({ action: 'status', id })`, or read the
+  child's `toolsAdded` in its events log. A worker that reports no shell tool is telling you the
+  truth — stop and fix its allowlist rather than waiting for it to park in `contact_supervisor`.
+- Any agent that needs a shell must name `ctx_shell`; that includes future worker variants and any
+  `researcher`/`scout` variant you give a shell.
+
+`ateam-lead` is unaffected: it declares `subagent` plus `allowNestedSubagents: true`, so pi's allowlist
+refresh re-activates `bash` after lean-ctx's filter, and it keeps the native shell. The lead should
+still not be the author — see Phase 1.
+
+The clean upstream fix is for lean-ctx to never suppress a builtin whose replacement is absent from
+the session — its own comment says it must "never suppress a tool without a local replacement", and
+this is that same failure class arriving through the allowlist. Until then, the allowlist entry is
+the reliable lever.
+
+### Research and audit children lose the shell too — and `write` goes with it
+
+The same lean-ctx allowlist collision described above hits read-only research, where it does more
+damage, because searching *is* the method. A `researcher` declaring `read, write, web_search, bash`
+and an `evidence-auditor` declaring `read, web_search, bash` both reported **no shell and no write
+tool** on a real run. (The missing `write` is the separate pi-subagents withholding, not lean-ctx.)
 Three consequences, all of which degrade the product silently:
 
 - **No shell means no negative results.** The child cannot run `grep`/`find`, so "X does not exist",
@@ -453,7 +582,7 @@ label is a claim, not evidence: re-run the gate before trusting the restored tre
 6. **Keep the reviewer read-only — but give it a mouth.** It verifies by reading; the parent supplies executed evidence. Read-only means no mutation tools, not no escalation channel: a reviewer with no way to ask a question can burn its entire timeout and return no verdict at all (observed in practice). Keep `contact_supervisor` in its tool list.
 7. **Prefer native mechanisms.** If you are writing routing logic, fallback handling, or a model picker, check `docs/models.md` first — it is probably already there.
 8. **Task-specific constraints override the generic phases — and say so explicitly.** A lane brief will sometimes forbid something a phase mandates. Observed twice in one session: a lead asked whether to dispatch the worker after being told not to (worker children get no shell), and whether to skip the repo-wide test suite that Phase 2 names. Both times the brief was right and the phase default was wrong for that environment. When you write a lane brief, state that the brief wins where it conflicts, and why — otherwise every lead burns a turn re-litigating it.
-9. **Skipping a check is not the same as omitting it.** When a check cannot run in the current environment, record it as *declining a check that cannot produce a signal here*: prove it fails identically on unmodified HEAD, and say where CI does run it. "Not run because it always fails on macOS" is evidence; "not run" is an unexplained gap.
+9. **Skipping a check is not the same as omitting it.** When a check cannot run in the current environment, record it as *declining a check that cannot produce a signal here*: prove it fails identically on unmodified HEAD, and say where CI does run it. "Not run because it always fails on macOS" is evidence; "not run" is an unexplained gap. **Name the unrunnable gates in the brief** when you allocate the lane — the command, and why it cannot produce a signal here — so the lead records them instead of rediscovering them at the cost of a dozen turns (a lane worktree has no provisioned toolchain, so a bare firmware-toolchain build cannot run; a wrapper that fetches a foreign-architecture binary cannot either).
 
 10. **Inherited project context advertises tools the agent does not have.** A subagent session loads
     the ancestor `AGENTS.md` files — including `/Users/vid/development/AGENTS.md`, the lean-ctx
@@ -465,10 +594,11 @@ label is a claim, not evidence: re-run the gate before trusting the restored tre
     repo's `AGENTS.md`, which lanes need — and `inheritGlobalContext: false` does not suppress
     `~/.pi/agent/AGENTS.md`, which still arrives as project context.
 
-11. **A child's tool list is exactly its frontmatter `tools:`.** Never assume a parent's mode, flags,
-    or installed extensions give a child a tool. Pi also *drops* some tools from children (see "A
-    worker child loses `bash` at any depth"), so a child can be narrower than its own declaration.
-    Confirm a capability
+11. **A child's tool list is exactly its frontmatter `tools:` — minus whatever extensions subtract.** Never assume a parent's mode, flags,
+    or installed extensions give a child a tool, and never assume a declared tool survives: `pi-lean-ctx`
+    with `routeShell: true` removes `bash` from every session it loads into, so a child can be narrower
+    than its own declaration (see "A worker child has no `bash` — give it `ctx_shell`"). Conversely the
+    allowlist *filters* extension tools, so an agent that needs `ctx_shell` must name it. Confirm a capability
     with `subagent({ action: 'status', id })` before relying on it, and treat a child that reports a
     missing tool as having told you the truth rather than failed.
 
@@ -497,6 +627,22 @@ label is a claim, not evidence: re-run the gate before trusting the restored tre
     reports needed correction on exactly these points — and the "audit" child inherited the same
     blind spot, so an audit is not a substitute for the parent checking. A read-only reviewer is
     unaffected because it needs no shell; a researcher is not, because searching is the job.
+
+14. **A dependency is proven by mechanism, not proximity — and an architecture swap is not a
+    dependency.** When a lane reports that porting a feature needs something else from the source
+    line, require the mechanism: *what breaks or misreports without it?* "It came along in the same
+    range" and "the source has it" are not dependencies. The test that settles it: does the target
+    feature fail without it, or does the other change merely improve something adjacent? If the
+    "dependency" **replaces** the target's existing design — a different control architecture, a
+    different clock, a different wire layout — it is a separate change wearing a dependency's
+    clothes, and that decision belongs to the operator, not to the lane. Observed: a learning
+    feature whose learned model is consumed only by a control mode the target repo has never had
+    (absent at core-math, bridge *and* wire layer). Porting it under the feature's banner would have
+    silently swapped how two boards share control; escalating it produced a clean choice.
+
+    Corollary: when a lane asserts something "already exists here", verify it yourself. In that same
+    escalation the lane's premise was backwards — the core math it planned against was absent from
+    the whole tree — and a port built on it would have compiled against nothing.
 
 ## Ecosystem, if per-task selection is ever wanted
 
