@@ -8,6 +8,7 @@ set -euo pipefail
 # shell call, by doing the mechanical setup the orchestrator kept repeating:
 #
 #   * allocate (or reuse) the agent-wt worktree for the issue;
+#   * materialise gitignored build inputs the fresh worktree lacks;
 #   * write the issue body to .lane/issue.{json,md}  (never through compression);
 #   * detect candidate gate commands into .lane/gate.md;
 #   * materialise the lane brief from templates/lane-brief.md into .lane/brief.md;
@@ -103,6 +104,47 @@ fi
 git -C "$wt" fetch origin "$default_branch" -q 2>/dev/null || true
 branch="$(git -C "$wt" rev-parse --abbrev-ref HEAD)"
 base_sha="$(git -C "$wt" rev-parse "$base_ref")"
+
+# --- disk headroom ----------------------------------------------------------
+# A full volume stalls heavy test runs with no output, no failing test and no
+# worker process, which reads as a flaky suite and burns a gate cycle before
+# anyone checks. Advisory only: warn, never block the lane.
+avail_kb="$(df -Pk "$wt" 2>/dev/null | awk 'NR==2 {print $4}')"
+if [[ -n "$avail_kb" && "$avail_kb" -lt 2097152 ]]; then
+  printf 'warning: %s MiB free on this volume; heavy Flutter runs can stall silently (0%% CPU, no tester child).\n' "$((avail_kb / 1024))" >&2
+fi
+
+# --- materialise gitignored inputs ------------------------------------------
+# A fresh worktree checks out tracked files only, so build inputs that the repo
+# gitignores (bundled plugin assets, bundled skins, the Android debug keystore)
+# are missing and the lane starts on a red baseline it did not cause.
+# Copy them from the primary checkout, but only paths Git reports as ignored:
+# a tracked path is never overwritten. Extra paths come from LANE_ASSETS.
+asset_candidates=(
+  "assets/plugins/*.reaplugin"
+  "assets/bundled_skins"
+  "android/app/debug.keystore"
+)
+if [[ -n "${LANE_ASSETS:-}" ]]; then
+  # shellcheck disable=SC2206
+  asset_candidates+=(${LANE_ASSETS})
+fi
+
+copied_assets=()
+skipped_assets=()
+for candidate in "${asset_candidates[@]}"; do
+  for src in $(compgen -G "$repo_root/$candidate" || true); do
+    rel="${src#$repo_root/}"
+    git -C "$wt" check-ignore -q -- "$rel" || continue
+    if [[ -e "$wt/$rel" ]]; then
+      skipped_assets+=("$rel")
+      continue
+    fi
+    mkdir -p "$wt/$(dirname "$rel")"
+    cp -R "$src" "$wt/$rel"
+    copied_assets+=("$rel")
+  done
+done
 
 # --- artifacts -------------------------------------------------------------
 lane_dir="$wt/.lane"
@@ -219,6 +261,13 @@ echo "  worktree  : $wt"
 echo "  branch    : $branch   base: $base_ref @ ${base_sha:0:8}"
 echo "  publish   : $publish"
 echo "  artifacts : $lane_dir/{issue.json,issue.md,gate.md,brief.md}"
+if [[ ${#copied_assets[@]} -gt 0 ]]; then
+  echo "  assets    : materialised ${#copied_assets[@]} gitignored path(s) from $repo_root"
+  [[ ${#skipped_assets[@]} -gt 0 ]] && echo "              (${#skipped_assets[@]} already present)"
+  echo "              they stay untracked: do not commit them"
+elif [[ ${#skipped_assets[@]} -gt 0 ]]; then
+  echo "  assets    : gitignored inputs already present"
+fi
 if [[ -n "$board" ]]; then
   echo "  lane board (dirty):"
   echo "$board"
@@ -226,4 +275,4 @@ fi
 echo
 echo "launch:"
 echo "  subagent({ agent: 'ateam-lead', cwd: '$wt', async: true,"
-echo "             task: 'Read .lane/brief.md in your worktree and execute it as your lane brief; it and the repo AGENTS.md win over your defaults.' })"
+echo "             task: 'Read .lane/brief.md in your worktree and execute it within your A-Team role boundaries.' })"
